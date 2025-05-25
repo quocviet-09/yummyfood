@@ -25,10 +25,53 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// Initialize Cloud Firestore and get a reference to the service
+async function displayProducts() {
+  const productCollection = collection(db, "food");
+  const querySnapshot = await getDocs(productCollection);
 
-const querySnapshot = await getDocs(collection(db, "food"));
-querySnapshot.forEach((doc) => {
-  // doc.data() is never undefined for query doc snapshots
-  console.log(doc.id, " => ", doc.data());
-});
+  const foodList = document.getElementById("food-list");
+  if (foodList) {
+    foodList.innerHTML = ""; // Xóa nội dung cũ
+
+    querySnapshot.forEach((doc) => {
+      const product = doc.data();
+      // Kiểm tra log
+      console.log(product);
+
+      // Tạo div menu-item
+      const itemDiv = document.createElement("div");
+      itemDiv.className = "col-lg-4 menu-item";
+
+      // Tạo img
+      const img = document.createElement("img");
+      img.src = product.thumbnail || "assets/img/menu/menu-item-1.png";
+      img.className = "menu-img img-fluid";
+      img.alt = product.Name || "Tên món";
+
+      // Tạo h4
+      const h4 = document.createElement("h4");
+      h4.textContent = product.Name || "Tên món";
+
+      // Tạo p.ingredients
+      const pIngredients = document.createElement("p");
+      pIngredients.className = "ingredients";
+      pIngredients.textContent = product.Information || "";
+
+      // Tạo p.price
+      const pPrice = document.createElement("p");
+      pPrice.className = "price";
+      pPrice.textContent = product.Price ? product.Price + "$" : "";
+
+      // Thêm các phần tử vào itemDiv
+      itemDiv.appendChild(img);
+      itemDiv.appendChild(h4);
+      itemDiv.appendChild(pIngredients);
+      itemDiv.appendChild(pPrice);
+
+      // Thêm itemDiv vào foodList
+      foodList.appendChild(itemDiv);
+    });
+  }
+}
+
+displayProducts();
