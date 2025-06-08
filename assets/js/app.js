@@ -49,8 +49,9 @@ async function displayProducts() {
       img.alt = product.Name || "Tên món";
 
       // Tạo h4
-      const h4 = document.createElement("h4");
-      h4.textContent = product.Name || "Tên món";
+      const foodTitle = document.createElement("a");
+      foodTitle.textContent = product.Name || "Tên món";
+      foodTitle.href = `food-detail.html?food=${product.url}`; // Thêm liên kết đến trang chi tiết món ăn
 
       // Tạo p.ingredients
       const pIngredients = document.createElement("p");
@@ -64,7 +65,7 @@ async function displayProducts() {
 
       // Thêm các phần tử vào itemDiv
       itemDiv.appendChild(img);
-      itemDiv.appendChild(h4);
+      itemDiv.appendChild(foodTitle);
       itemDiv.appendChild(pIngredients);
       itemDiv.appendChild(pPrice);
 
