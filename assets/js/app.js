@@ -26,7 +26,7 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 async function displayProducts() {
-  const productCollection = collection(db, "food");
+  const productCollection = query(collection(db, "food"), limit(6));
   const querySnapshot = await getDocs(productCollection);
 
   const foodList = document.getElementById("food-list");
