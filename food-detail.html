@@ -1,14 +1,34 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Document</title>
-</head>
-
-<body>
-  <script type="module" src="assets\js\product-detail.js"></script>
-</body>
-
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chi tiết sản phẩm</title>
+    <link rel="stylesheet" href="food-detail.css" />
+  </head>
+  <body>
+    <div class="container" id="product-detail"></div>
+    <div class="container" id="reviews-section">
+      <h3>Đánh giá của khách hàng</h3>
+      <div id="reviews-list"></div>
+      <form id="review-form">
+        <input type="text" id="reviewer" placeholder="Tên của bạn" required />
+        <textarea
+          id="review-content"
+          placeholder="Nhận xét..."
+          required
+        ></textarea>
+        <select id="review-rating" required>
+          <option value="">Chọn sao</option>
+          <option value="5">5 sao</option>
+          <option value="4">4 sao</option>
+          <option value="3">3 sao</option>
+          <option value="2">2 sao</option>
+          <option value="1">1 sao</option>
+        </select>
+        <button type="submit">Gửi đánh giá</button>
+      </form>
+    </div>
+    <script type="module" src="assets/js/product-detail.js"></script>
+  </body>
 </html>
