@@ -33,58 +33,91 @@ async function getProductDetail() {
       "<p>Không tìm thấy sản phẩm.</p>";
     return;
   }
-
   querySnapshot.forEach((doc) => {
     const product = doc.data();
 
-    // HTML chi tiết sản phẩm
+    // HTML chi tiết sản phẩm với thiết kế mới
     document.getElementById("product-detail").innerHTML = `
       <div class="product-detail-card">
-        <div class="product-img">
-          <img src="${
-            product.Image || "assets/img/menu/menu-item-1.png"
-          }" alt="${product.Name}" />
+        <div class="product-image-section">
+          <div class="product-img">
+            <img src="${product.Image || "assets/img/menu/menu-item-1.png"}" alt="${product.Name}" />
+            <div class="product-badge">Món mới</div>
+          </div>
         </div>
-        <div class="product-info">
-          <h2>${product.Name}</h2>
-          <p>${product.Information || ""}</p>
-          <div class="product-quantity">
-            <label>Số lượng:</label>
-            <button id="decrease">-</button>
-            <input type="number" id="quantity" value="1" min="1" style="width:40px;text-align:center;" />
-            <button id="increase">+</button>
+        <div class="product-info-section">
+          <h1 class="product-title">${product.Name}</h1>
+          
+          <div class="product-rating">
+            <div class="stars">
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star-half-alt"></i>
+            </div>
+            <span class="rating-text">4.5 (127 đánh giá)</span>
           </div>
+
           <div class="product-price">
-            Giá: <span id="price">${product.Price || 0}</span> $
+            <span class="current-price" id="current-price">${product.Price || 0}$</span>
+            <span class="original-price">${(product.Price * 1.2 || 0).toFixed(0)}$</span>
+            <span class="discount-badge">-20%</span>
           </div>
-          <div class="product-actions">
-            <button id="add-to-cart">Thêm vào giỏ hàng</button>
-            <button id="buy-now">Mua ngay</button>
+
+          <p class="product-description">${product.Information || "Món ăn ngon tuyệt vời với hương vị độc đáo, được chế biến từ những nguyên liệu tươi ngon nhất."}</p>
+
+          <div class="quantity-section">
+            <label class="quantity-label">Số lượng:</label>
+            <div class="quantity-controls">
+              <button class="quantity-btn" id="decrease">-</button>
+              <input type="number" id="quantity" value="1" min="1" class="quantity-input" />
+              <button class="quantity-btn" id="increase">+</button>
+            </div>
+            
+            <div class="action-buttons">
+              <button class="btn btn-primary" id="add-to-cart">
+                <i class="fas fa-shopping-cart"></i>
+                Thêm vào giỏ
+              </button>
+              <button class="btn btn-secondary" id="buy-now">
+                <i class="fas fa-bolt"></i>
+                Mua ngay
+              </button>
+            </div>
           </div>
         </div>
       </div>
     `;
 
-    // Xử lý tăng giảm số lượng và cập nhật giá
+    // Cập nhật mô tả trong tab
+    document.getElementById("product-description").textContent = product.Information || "Món ăn ngon tuyệt vời với hương vị độc đáo, được chế biến từ những nguyên liệu tươi ngon nhất.";    // Xử lý tăng giảm số lượng và cập nhật giá
     const quantityInput = document.getElementById("quantity");
-    const priceSpan = document.getElementById("price");
+    const currentPriceSpan = document.getElementById("current-price");
     const basePrice = Number(product.Price || 0);
+
+    function updatePrice() {
+      const quantity = Number(quantityInput.value);
+      currentPriceSpan.textContent = `${(basePrice * quantity).toFixed(0)}$`;
+    }
 
     document.getElementById("increase").onclick = () => {
       quantityInput.value = Number(quantityInput.value) + 1;
-      priceSpan.textContent = basePrice * Number(quantityInput.value);
+      updatePrice();
     };
+
     document.getElementById("decrease").onclick = () => {
       if (Number(quantityInput.value) > 1) {
         quantityInput.value = Number(quantityInput.value) - 1;
-        priceSpan.textContent = basePrice * Number(quantityInput.value);
+        updatePrice();
       }
     };
+
     quantityInput.oninput = () => {
       let val = Number(quantityInput.value);
       if (val < 1) val = 1;
       quantityInput.value = val;
-      priceSpan.textContent = basePrice * val;
+      updatePrice();
     };
 
     // Thêm vào giỏ hàng
@@ -99,50 +132,193 @@ async function getProductDetail() {
       });
       localStorage.setItem("cart", JSON.stringify(cart));
       alert("Đã thêm vào giỏ hàng!");
-    };
-
-    // Mua ngay
+    };    // Mua ngay
     document.getElementById("buy-now").onclick = () => {
-      alert("Chức năng mua ngay đang phát triển!");
+      const orderData = {
+        id: doc.id,
+        name: product.Name,
+        image: product.Image,
+        price: basePrice,
+        quantity: Number(quantityInput.value),
+        total: basePrice * Number(quantityInput.value)
+      };
+
+      // Lưu thông tin đơn hàng và chuyển đến trang thanh toán
+      localStorage.setItem("quickOrder", JSON.stringify(orderData));
+      alert("Đang chuyển đến trang thanh toán...");
+      // window.location.href = "checkout.html"; // Uncomment khi có trang checkout
     };
   });
+}
+
+// Tab functionality
+function initializeTabs() {
+  const tabBtns = document.querySelectorAll('.tab-btn');
+  const tabPanels = document.querySelectorAll('.tab-panel');
+
+  tabBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const targetTab = btn.getAttribute('data-tab');
+
+      // Remove active class from all tabs and panels
+      tabBtns.forEach(b => b.classList.remove('active'));
+      tabPanels.forEach(p => p.classList.remove('active'));
+
+      // Add active class to clicked tab and corresponding panel
+      btn.classList.add('active');
+      document.getElementById(`${targetTab}-panel`).classList.add('active');
+    });
+  });
+}
+
+// Enhanced review rendering
+function renderReviews() {
+  const reviews = JSON.parse(localStorage.getItem(reviewsKey) || "[]");
+  const reviewsList = document.getElementById("reviews-list");
+
+  if (!reviews.length) {
+    reviewsList.innerHTML = `
+      <div class="no-reviews">
+        <i class="fas fa-comments" style="font-size: 3rem; color: var(--gray-400); margin-bottom: 1rem;"></i>
+        <p style="color: var(--gray-500); text-align: center;">Chưa có đánh giá nào. Hãy là người đầu tiên đánh giá món ăn này!</p>
+      </div>
+    `;
+    return;
+  }
+
+  reviewsList.innerHTML = reviews
+    .map(
+      (r) => `
+        <div class="review-item">
+          <div class="review-header">
+            <strong class="reviewer-name">${r.name}</strong>
+            <div class="review-rating">${"⭐".repeat(r.rating)}</div>
+          </div>
+          <div class="review-content">${r.content}</div>
+        </div>
+      `
+    )
+    .join("");
+}
+
+// Load related products (mock data)
+function loadRelatedProducts() {
+  const relatedProducts = [
+    { name: "Bánh mì thịt nướng", price: "25", image: "assets/img/menu/menu-item-2.png" },
+    { name: "Phở bò tái", price: "45", image: "assets/img/menu/menu-item-3.png" },
+    { name: "Cơm gà xối mỡ", price: "35", image: "assets/img/menu/menu-item-4.png" },
+    { name: "Bún chả Hà Nội", price: "40", image: "assets/img/menu/menu-item-5.png" }
+  ];
+
+  const relatedGrid = document.getElementById("related-products");
+  relatedGrid.innerHTML = relatedProducts
+    .map(product => `
+      <div class="related-item">
+        <img src="${product.image}" alt="${product.name}" />
+        <div class="related-item-info">
+          <h4>${product.name}</h4>
+          <div class="price">${product.price}$</div>
+        </div>
+      </div>
+    `)
+    .join("");
+}
+
+// Update cart count
+function updateCartCount() {
+  const cart = JSON.parse(localStorage.getItem("cart") || "[]");
+  const cartCount = document.querySelector('.cart-count');
+  if (cartCount) {
+    const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+    cartCount.textContent = totalItems;
+  }
 }
 if (foodName) {
   getProductDetail();
 }
 
+// Initialize components when page loads
+document.addEventListener('DOMContentLoaded', () => {
+  initializeTabs();
+  loadRelatedProducts();
+  updateCartCount();
+
+  // Cart button click handler
+  const cartBtn = document.querySelector('.cart-btn');
+  if (cartBtn) {
+    cartBtn.addEventListener('click', () => {
+      const cart = JSON.parse(localStorage.getItem("cart") || "[]");
+      if (cart.length === 0) {
+        alert("Giỏ hàng của bạn đang trống!");
+        return;
+      }
+
+      // Show cart items in a simple alert (you can replace this with a modal)
+      let cartSummary = "Giỏ hàng của bạn:\n\n";
+      let total = 0;
+
+      cart.forEach((item, index) => {
+        const itemTotal = item.price * item.quantity;
+        cartSummary += `${index + 1}. ${item.name}\n   Số lượng: ${item.quantity} | Giá: ${itemTotal}$\n\n`;
+        total += itemTotal;
+      });
+
+      cartSummary += `Tổng cộng: ${total}$`;
+      alert(cartSummary);
+    });
+  }
+
+  // Smooth scroll for navigation links
+  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+      e.preventDefault();
+      const target = document.querySelector(this.getAttribute('href'));
+      if (target) {
+        target.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start'
+        });
+      }
+    });
+  });
+});
+
 // Đánh giá khách hàng (localStorage demo)
 const reviewsKey = "reviews_" + foodName;
-function renderReviews() {
-  const reviews = JSON.parse(localStorage.getItem(reviewsKey) || "[]");
-  const reviewsList = document.getElementById("reviews-list");
-  if (!reviews.length) {
-    reviewsList.innerHTML = "<p>Chưa có đánh giá nào.</p>";
-    return;
-  }
-  reviewsList.innerHTML = reviews
-    .map(
-      (r) => `
-    <div class="review-item">
-      <strong>${r.name}</strong> - <span>${"★".repeat(r.rating)}${"☆".repeat(
-        5 - r.rating
-      )}</span>
-      <div>${r.content}</div>
-    </div>
-  `
-    )
-    .join("");
-}
 document.getElementById("review-form").onsubmit = function (e) {
   e.preventDefault();
   const name = document.getElementById("reviewer").value.trim();
   const content = document.getElementById("review-content").value.trim();
   const rating = Number(document.getElementById("review-rating").value);
-  if (!name || !content || !rating) return;
+
+  if (!name || !content || !rating) {
+    alert("Vui lòng điền đầy đủ thông tin!");
+    return;
+  }
+
   const reviews = JSON.parse(localStorage.getItem(reviewsKey) || "[]");
-  reviews.unshift({ name, content, rating });
+  reviews.unshift({
+    name,
+    content,
+    rating,
+    date: new Date().toLocaleDateString('vi-VN')
+  });
   localStorage.setItem(reviewsKey, JSON.stringify(reviews));
+
+  // Show success message
+  const submitBtn = this.querySelector('button[type="submit"]');
+  const originalText = submitBtn.innerHTML;
+  submitBtn.innerHTML = '<i class="fas fa-check"></i> Đã gửi!';
+  submitBtn.style.background = 'var(--success-color)';
+
+  setTimeout(() => {
+    submitBtn.innerHTML = originalText;
+    submitBtn.style.background = '';
+  }, 2000);
+
   this.reset();
   renderReviews();
 };
+
+// Initialize reviews when page loads
 renderReviews();
