@@ -1,172 +1,189 @@
 <!DOCTYPE html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chi tiết sản phẩm</title>
+    <link rel="stylesheet" href="food-detail.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+  </head>
 
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Chi tiết sản phẩm</title>
-  <link rel="stylesheet" href="food-detail.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-</head>
-
-<body>
-  <!-- Header Navigation -->
-  <nav class="navbar">
-    <div class="nav-container">
-      <a href="index.html" class="nav-brand">
-        <i class="fas fa-utensils"></i>
-        FoodiePlace
-      </a>
-      <div class="nav-actions">
-        <button class="cart-btn">
-          <i class="fas fa-shopping-cart"></i>
-          <span class="cart-count">0</span>
-        </button>
-      </div>
-    </div>
-  </nav>
-
-  <!-- Main Content -->
-  <main class="main-content">
-    <!-- Product Hero Section -->
-    <section class="product-hero">
-      <div class="container">
-        <div class="breadcrumb">
-          <a href="index.html"><i class="fas fa-home"></i> Trang chủ</a>
-          <span class="separator">/</span>
-          <span class="current">Chi tiết sản phẩm</span>
+  <body>
+    <!-- Header Navigation -->
+    <nav class="navbar">
+      <div class="nav-container">
+        <a href="index.html" class="nav-brand">
+          <i class="fas fa-utensils"></i>
+          KICHI-KICHI
+        </a>
+        <div class="nav-actions">
+          <button class="cart-btn">
+            <i class="fas fa-shopping-cart"></i>
+            <span class="cart-count">0</span>
+          </button>
+          <div
+            class="cart-dropdown"
+            id="cart-dropdown"
+            style="display: none"
+          ></div>
         </div>
-        <div id="product-detail" class="product-detail-wrapper"></div>
       </div>
-    </section>
+    </nav>
 
-    <!-- Product Info Tabs -->
-    <section class="product-tabs">
-      <div class="container">
-        <div class="tabs-header">
-          <button class="tab-btn active" data-tab="description">
-            <i class="fas fa-info-circle"></i>
-            Mô tả
-          </button>
-          <button class="tab-btn" data-tab="nutrition">
-            <i class="fas fa-apple-alt"></i>
-            Dinh dưỡng
-          </button>
-          <button class="tab-btn" data-tab="reviews">
-            <i class="fas fa-star"></i>
-            Đánh giá
-          </button>
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Product Hero Section -->
+      <section class="product-hero">
+        <div class="container">
+          <div class="breadcrumb">
+            <a href="index.html"><i class="fas fa-home"></i> Trang chủ</a>
+            <span class="separator">/</span>
+            <span class="current">Chi tiết sản phẩm</span>
+          </div>
+          <div id="product-detail" class="product-detail-wrapper"></div>
         </div>
+      </section>
 
-        <div class="tabs-content">
-          <div class="tab-panel active" id="description-panel">
-            <div class="description-content">
-              <h3>Thông tin chi tiết</h3>
-              <p id="product-description">Đang tải thông tin sản phẩm...</p>
-            </div>
+      <!-- Product Info Tabs -->
+      <section class="product-tabs">
+        <div class="container">
+          <div class="tabs-header">
+            <button class="tab-btn active" data-tab="description">
+              <i class="fas fa-info-circle"></i>
+              Mô tả
+            </button>
+            <button class="tab-btn" data-tab="nutrition">
+              <i class="fas fa-apple-alt"></i>
+              Dinh dưỡng
+            </button>
+            <button class="tab-btn" data-tab="reviews">
+              <i class="fas fa-star"></i>
+              Đánh giá
+            </button>
           </div>
 
-          <div class="tab-panel" id="nutrition-panel">
-            <div class="nutrition-grid">
-              <div class="nutrition-item">
-                <i class="fas fa-fire"></i>
-                <span class="label">Calories</span>
-                <span class="value">250 kcal</span>
-              </div>
-              <div class="nutrition-item">
-                <i class="fas fa-drumstick-bite"></i>
-                <span class="label">Protein</span>
-                <span class="value">15g</span>
-              </div>
-              <div class="nutrition-item">
-                <i class="fas fa-bread-slice"></i>
-                <span class="label">Carbs</span>
-                <span class="value">30g</span>
-              </div>
-              <div class="nutrition-item">
-                <i class="fas fa-seedling"></i>
-                <span class="label">Fat</span>
-                <span class="value">8g</span>
+          <div class="tabs-content">
+            <div class="tab-panel active" id="description-panel">
+              <div class="description-content">
+                <h3>Thông tin chi tiết</h3>
+                <p id="product-description">Đang tải thông tin sản phẩm...</p>
               </div>
             </div>
-          </div>
 
-          <div class="tab-panel" id="reviews-panel">
-            <div class="reviews-container">
-              <div class="reviews-header">
-                <h3>Đánh giá khách hàng</h3>
-                <div class="rating-summary">
-                  <div class="avg-rating">
-                    <span class="rating-number">4.5</span>
-                    <div class="stars">
-                      <i class="fas fa-star"></i>
-                      <i class="fas fa-star"></i>
-                      <i class="fas fa-star"></i>
-                      <i class="fas fa-star"></i>
-                      <i class="fas fa-star-half-alt"></i>
+            <div class="tab-panel" id="nutrition-panel">
+              <div class="nutrition-grid">
+                <div class="nutrition-item">
+                  <i class="fas fa-fire"></i>
+                  <span class="label">Calories</span>
+                  <span class="value">250 kcal</span>
+                </div>
+                <div class="nutrition-item">
+                  <i class="fas fa-drumstick-bite"></i>
+                  <span class="label">Protein</span>
+                  <span class="value">15g</span>
+                </div>
+                <div class="nutrition-item">
+                  <i class="fas fa-bread-slice"></i>
+                  <span class="label">Carbs</span>
+                  <span class="value">30g</span>
+                </div>
+                <div class="nutrition-item">
+                  <i class="fas fa-seedling"></i>
+                  <span class="label">Fat</span>
+                  <span class="value">8g</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="tab-panel" id="reviews-panel">
+              <div class="reviews-container">
+                <div class="reviews-header">
+                  <h3>Đánh giá khách hàng</h3>
+                  <div class="rating-summary">
+                    <div class="avg-rating">
+                      <span class="rating-number">4.5</span>
+                      <div class="stars">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star-half-alt"></i>
+                      </div>
+                      <span class="total-reviews">(24 đánh giá)</span>
                     </div>
-                    <span class="total-reviews">(24 đánh giá)</span>
                   </div>
                 </div>
+
+                <div id="reviews-list" class="reviews-list"></div>
+
+                <form id="review-form" class="review-form-card">
+                  <h4>Viết đánh giá của bạn</h4>
+                  <div class="form-group">
+                    <label for="reviewer">Tên của bạn</label>
+                    <input
+                      type="text"
+                      id="reviewer"
+                      placeholder="Nhập tên của bạn"
+                      required
+                    />
+                  </div>
+                  <div class="form-group">
+                    <label for="review-rating">Đánh giá</label>
+                    <div class="rating-input">
+                      <select id="review-rating" required>
+                        <option value="">Chọn số sao</option>
+                        <option value="5">⭐⭐⭐⭐⭐ Xuất sắc</option>
+                        <option value="4">⭐⭐⭐⭐ Tốt</option>
+                        <option value="3">⭐⭐⭐ Bình thường</option>
+                        <option value="2">⭐⭐ Kém</option>
+                        <option value="1">⭐ Rất kém</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label for="review-content">Nhận xét</label>
+                    <textarea
+                      id="review-content"
+                      placeholder="Chia sẻ trải nghiệm của bạn về món ăn này..."
+                      required
+                    ></textarea>
+                  </div>
+                  <button type="submit" class="submit-review-btn">
+                    <i class="fas fa-paper-plane"></i>
+                    Gửi đánh giá
+                  </button>
+                </form>
               </div>
-
-              <div id="reviews-list" class="reviews-list"></div>
-
-              <form id="review-form" class="review-form-card">
-                <h4>Viết đánh giá của bạn</h4>
-                <div class="form-group">
-                  <label for="reviewer">Tên của bạn</label>
-                  <input type="text" id="reviewer" placeholder="Nhập tên của bạn" required />
-                </div>
-                <div class="form-group">
-                  <label for="review-rating">Đánh giá</label>
-                  <div class="rating-input">
-                    <select id="review-rating" required>
-                      <option value="">Chọn số sao</option>
-                      <option value="5">⭐⭐⭐⭐⭐ Xuất sắc</option>
-                      <option value="4">⭐⭐⭐⭐ Tốt</option>
-                      <option value="3">⭐⭐⭐ Bình thường</option>
-                      <option value="2">⭐⭐ Kém</option>
-                      <option value="1">⭐ Rất kém</option>
-                    </select>
-                  </div>
-                </div>
-                <div class="form-group">
-                  <label for="review-content">Nhận xét</label>
-                  <textarea id="review-content" placeholder="Chia sẻ trải nghiệm của bạn về món ăn này..."
-                    required></textarea>
-                </div>
-                <button type="submit" class="submit-review-btn">
-                  <i class="fas fa-paper-plane"></i>
-                  Gửi đánh giá
-                </button>
-              </form>
             </div>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <!-- Related Products -->
-    <section class="related-products">
-      <div class="container">
-        <h3>Món ăn tương tự</h3>
-        <div class="related-grid" id="related-products">
-          <!-- Related products will be loaded here -->
+      <!-- Related Products -->
+      <section class="related-products">
+        <div class="container">
+          <h3>Món ăn tương tự</h3>
+          <div class="related-grid" id="related-products">
+            <!-- Related products will be loaded here -->
+          </div>
         </div>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="container">
+        <p>&copy; 2025 FoodiePlace. Tất cả quyền được bảo lưu.</p>
       </div>
-    </section>
-  </main>
+    </footer>
 
-  <!-- Footer -->
-  <footer class="footer">
-    <div class="container">
-      <p>&copy; 2025 FoodiePlace. Tất cả quyền được bảo lưu.</p>
-    </div>
-  </footer>
-
-  <script type="module" src="assets/js/product-detail.js"></script>
-</body>
-
+    <script type="module" src="assets/js/product-detail.js"></script>
+  </body>
 </html>

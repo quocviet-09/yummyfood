@@ -20,6 +20,7 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 const foodName = location.search.split("food=")[1];
+console.log("🚀 ~ location.search:", location.search.split("food="));
 
 async function getProductDetail() {
   const productCollection = query(
@@ -41,7 +42,9 @@ async function getProductDetail() {
       <div class="product-detail-card">
         <div class="product-image-section">
           <div class="product-img">
-            <img src="${product.Image || "assets/img/menu/menu-item-1.png"}" alt="${product.Name}" />
+            <img src="${
+              product.thumbnail || "assets/img/menu/menu-item-1.png"
+            }" alt="${product.Name}" />
             <div class="product-badge">Món mới</div>
           </div>
         </div>
@@ -60,12 +63,19 @@ async function getProductDetail() {
           </div>
 
           <div class="product-price">
-            <span class="current-price" id="current-price">${product.Price || 0}$</span>
-            <span class="original-price">${(product.Price * 1.2 || 0).toFixed(0)}$</span>
+            <span class="current-price" id="current-price">${
+              product.Price || 0
+            }$</span>
+            <span class="original-price">${(product.Price * 1.2 || 0).toFixed(
+              0
+            )}$</span>
             <span class="discount-badge">-20%</span>
           </div>
 
-          <p class="product-description">${product.Information || "Món ăn ngon tuyệt vời với hương vị độc đáo, được chế biến từ những nguyên liệu tươi ngon nhất."}</p>
+          <p class="product-description">${
+            product.Information ||
+            "Món ăn ngon tuyệt vời với hương vị độc đáo, được chế biến từ những nguyên liệu tươi ngon nhất."
+          }</p>
 
           <div class="quantity-section">
             <label class="quantity-label">Số lượng:</label>
@@ -91,7 +101,9 @@ async function getProductDetail() {
     `;
 
     // Cập nhật mô tả trong tab
-    document.getElementById("product-description").textContent = product.Information || "Món ăn ngon tuyệt vời với hương vị độc đáo, được chế biến từ những nguyên liệu tươi ngon nhất.";    // Xử lý tăng giảm số lượng và cập nhật giá
+    document.getElementById("product-description").textContent =
+      product.Information ||
+      "Món ăn ngon tuyệt vời với hương vị độc đáo, được chế biến từ những nguyên liệu tươi ngon nhất."; // Xử lý tăng giảm số lượng và cập nhật giá
     const quantityInput = document.getElementById("quantity");
     const currentPriceSpan = document.getElementById("current-price");
     const basePrice = Number(product.Price || 0);
@@ -123,16 +135,27 @@ async function getProductDetail() {
     // Thêm vào giỏ hàng
     document.getElementById("add-to-cart").onclick = () => {
       const cart = JSON.parse(localStorage.getItem("cart") || "[]");
-      cart.push({
-        id: doc.id,
-        name: product.Name,
-        image: product.Image,
-        price: basePrice,
-        quantity: Number(quantityInput.value),
-      });
+      const productId = doc.id;
+      const quantityToAdd = Number(quantityInput.value);
+
+      // Kiểm tra sản phẩm đã có trong giỏ chưa
+      const existing = cart.find((item) => item.id === productId);
+      if (existing) {
+        existing.quantity += quantityToAdd;
+      } else {
+        cart.push({
+          id: productId,
+          name: product.Name,
+          image: product.thumbnail,
+          price: basePrice,
+          quantity: quantityToAdd,
+        });
+      }
       localStorage.setItem("cart", JSON.stringify(cart));
+      updateCartCount();
       alert("Đã thêm vào giỏ hàng!");
-    };    // Mua ngay
+    };
+    // Mua ngay
     document.getElementById("buy-now").onclick = () => {
       const orderData = {
         id: doc.id,
@@ -140,7 +163,7 @@ async function getProductDetail() {
         image: product.Image,
         price: basePrice,
         quantity: Number(quantityInput.value),
-        total: basePrice * Number(quantityInput.value)
+        total: basePrice * Number(quantityInput.value),
       };
 
       // Lưu thông tin đơn hàng và chuyển đến trang thanh toán
@@ -153,20 +176,20 @@ async function getProductDetail() {
 
 // Tab functionality
 function initializeTabs() {
-  const tabBtns = document.querySelectorAll('.tab-btn');
-  const tabPanels = document.querySelectorAll('.tab-panel');
+  const tabBtns = document.querySelectorAll(".tab-btn");
+  const tabPanels = document.querySelectorAll(".tab-panel");
 
-  tabBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      const targetTab = btn.getAttribute('data-tab');
+  tabBtns.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const targetTab = btn.getAttribute("data-tab");
 
       // Remove active class from all tabs and panels
-      tabBtns.forEach(b => b.classList.remove('active'));
-      tabPanels.forEach(p => p.classList.remove('active'));
+      tabBtns.forEach((b) => b.classList.remove("active"));
+      tabPanels.forEach((p) => p.classList.remove("active"));
 
       // Add active class to clicked tab and corresponding panel
-      btn.classList.add('active');
-      document.getElementById(`${targetTab}-panel`).classList.add('active');
+      btn.classList.add("active");
+      document.getElementById(`${targetTab}-panel`).classList.add("active");
     });
   });
 }
@@ -204,15 +227,32 @@ function renderReviews() {
 // Load related products (mock data)
 function loadRelatedProducts() {
   const relatedProducts = [
-    { name: "Bánh mì thịt nướng", price: "25", image: "assets/img/menu/menu-item-2.png" },
-    { name: "Phở bò tái", price: "45", image: "assets/img/menu/menu-item-3.png" },
-    { name: "Cơm gà xối mỡ", price: "35", image: "assets/img/menu/menu-item-4.png" },
-    { name: "Bún chả Hà Nội", price: "40", image: "assets/img/menu/menu-item-5.png" }
+    {
+      name: "Bánh mì thịt nướng",
+      price: "25",
+      image: "assets/img/menu/menu-item-2.png",
+    },
+    {
+      name: "Phở bò tái",
+      price: "45",
+      image: "assets/img/menu/menu-item-3.png",
+    },
+    {
+      name: "Cơm gà xối mỡ",
+      price: "35",
+      image: "assets/img/menu/menu-item-4.png",
+    },
+    {
+      name: "Bún chả Hà Nội",
+      price: "40",
+      image: "assets/img/menu/menu-item-5.png",
+    },
   ];
 
   const relatedGrid = document.getElementById("related-products");
   relatedGrid.innerHTML = relatedProducts
-    .map(product => `
+    .map(
+      (product) => `
       <div class="related-item">
         <img src="${product.image}" alt="${product.name}" />
         <div class="related-item-info">
@@ -220,14 +260,15 @@ function loadRelatedProducts() {
           <div class="price">${product.price}$</div>
         </div>
       </div>
-    `)
+    `
+    )
     .join("");
 }
 
 // Update cart count
 function updateCartCount() {
   const cart = JSON.parse(localStorage.getItem("cart") || "[]");
-  const cartCount = document.querySelector('.cart-count');
+  const cartCount = document.querySelector(".cart-count");
   if (cartCount) {
     const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
     cartCount.textContent = totalItems;
@@ -238,45 +279,20 @@ if (foodName) {
 }
 
 // Initialize components when page loads
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener("DOMContentLoaded", () => {
   initializeTabs();
   loadRelatedProducts();
   updateCartCount();
 
-  // Cart button click handler
-  const cartBtn = document.querySelector('.cart-btn');
-  if (cartBtn) {
-    cartBtn.addEventListener('click', () => {
-      const cart = JSON.parse(localStorage.getItem("cart") || "[]");
-      if (cart.length === 0) {
-        alert("Giỏ hàng của bạn đang trống!");
-        return;
-      }
-
-      // Show cart items in a simple alert (you can replace this with a modal)
-      let cartSummary = "Giỏ hàng của bạn:\n\n";
-      let total = 0;
-
-      cart.forEach((item, index) => {
-        const itemTotal = item.price * item.quantity;
-        cartSummary += `${index + 1}. ${item.name}\n   Số lượng: ${item.quantity} | Giá: ${itemTotal}$\n\n`;
-        total += itemTotal;
-      });
-
-      cartSummary += `Tổng cộng: ${total}$`;
-      alert(cartSummary);
-    });
-  }
-
   // Smooth scroll for navigation links
-  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-    anchor.addEventListener('click', function (e) {
+  document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+    anchor.addEventListener("click", function (e) {
       e.preventDefault();
-      const target = document.querySelector(this.getAttribute('href'));
+      const target = document.querySelector(this.getAttribute("href"));
       if (target) {
         target.scrollIntoView({
-          behavior: 'smooth',
-          block: 'start'
+          behavior: "smooth",
+          block: "start",
         });
       }
     });
@@ -301,7 +317,7 @@ document.getElementById("review-form").onsubmit = function (e) {
     name,
     content,
     rating,
-    date: new Date().toLocaleDateString('vi-VN')
+    date: new Date().toLocaleDateString("vi-VN"),
   });
   localStorage.setItem(reviewsKey, JSON.stringify(reviews));
 
@@ -309,11 +325,11 @@ document.getElementById("review-form").onsubmit = function (e) {
   const submitBtn = this.querySelector('button[type="submit"]');
   const originalText = submitBtn.innerHTML;
   submitBtn.innerHTML = '<i class="fas fa-check"></i> Đã gửi!';
-  submitBtn.style.background = 'var(--success-color)';
+  submitBtn.style.background = "var(--success-color)";
 
   setTimeout(() => {
     submitBtn.innerHTML = originalText;
-    submitBtn.style.background = '';
+    submitBtn.style.background = "";
   }, 2000);
 
   this.reset();
@@ -322,3 +338,68 @@ document.getElementById("review-form").onsubmit = function (e) {
 
 // Initialize reviews when page loads
 renderReviews();
+
+// ...existing code...
+
+// Cart Dropdown Logic
+const cartBtn = document.querySelector(".cart-btn");
+const cartDropdown = document.getElementById("cart-dropdown");
+const navActions = document.querySelector(".nav-actions");
+
+// Render cart dropdown
+function renderCartDropdown() {
+  const cart = JSON.parse(localStorage.getItem("cart") || "[]");
+  if (!cartDropdown) return;
+  if (cart.length === 0) {
+    cartDropdown.innerHTML = `<div class="cart-empty">Giỏ hàng của bạn đang trống.</div>`;
+    return;
+  }
+  let html = `<h4>Giỏ hàng của bạn</h4>`;
+  let total = 0;
+  cart.forEach((item) => {
+    const itemTotal = item.price * item.quantity;
+    total += itemTotal;
+    html += `
+      <div class="cart-item">
+        <img src="${item.image || "assets/img/menu/menu-item-1.png"}" alt="${
+      item.name
+    }">
+        <div class="cart-item-info">
+          <div class="cart-item-name">${item.name}</div>
+          <div class="cart-item-qty">Số lượng: ${item.quantity}</div>
+        </div>
+        <div class="cart-item-price">${itemTotal}$</div>
+      </div>
+    `;
+  });
+  html += `<div class="cart-total">Tổng cộng: ${total}$</div>
+    <div class="cart-actions">
+      <button onclick="window.location.href='checkout.html'">Thanh toán</button>
+      <button onclick="clearCart()">Xóa giỏ</button>
+    </div>`;
+  cartDropdown.innerHTML = html;
+}
+
+// Toggle cart dropdown
+cartBtn.addEventListener("click", (e) => {
+  e.stopPropagation();
+  renderCartDropdown();
+  cartDropdown.style.display =
+    cartDropdown.style.display === "block" ? "none" : "block";
+});
+
+// Ẩn dropdown khi click ra ngoài
+document.addEventListener("click", (e) => {
+  if (!navActions.contains(e.target)) {
+    cartDropdown.style.display = "none";
+  }
+});
+
+// Hàm xóa giỏ hàng
+window.clearCart = function () {
+  localStorage.removeItem("cart");
+  renderCartDropdown();
+  updateCartCount();
+};
+
+// ...existing code...
