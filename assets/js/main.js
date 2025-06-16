@@ -190,3 +190,51 @@
 const items = document.querySelectorAll("#menu-breakfast .menu-item");
 
 const data = [];
+
+// ...existing code...
+
+// Auth state handling
+import { onAuthChange, logoutUser } from "./auth.js";
+
+onAuthChange(async (user) => {
+  const userSection = document.getElementById("userSection");
+  const loginButton = document.getElementById("loginButton");
+  const userName = document.getElementById("userName");
+
+  if (user) {
+    userSection.style.display = "block";
+    loginButton.style.display = "none";
+    userName.textContent = user.name;
+  } else {
+    userSection.style.display = "none";
+    loginButton.style.display = "block";
+  }
+});
+
+window.logout = async () => {
+  await logoutUser();
+  localStorage.removeItem("user");
+  window.location.reload();
+};
+
+// Thêm vào cuối file main.js
+document.addEventListener("DOMContentLoaded", function () {
+  const userAvatar = document.querySelector(".user-avatar");
+  const userDropdown = document.querySelector(".user-dropdown");
+  let isDropdownVisible = false;
+
+  userAvatar.addEventListener("click", function (e) {
+    e.stopPropagation();
+    if (isDropdownVisible) {
+      userDropdown.style.display = "none";
+    } else {
+      userDropdown.style.display = "block";
+    }
+    isDropdownVisible = !isDropdownVisible;
+  });
+
+  // Ngăn dropdown ẩn khi click vào các mục trong dropdown
+  userDropdown.addEventListener("click", function (e) {
+    e.stopPropagation();
+  });
+});

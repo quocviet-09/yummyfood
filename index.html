@@ -102,8 +102,34 @@
           <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
         </nav>
 
-        <a class="btn-getstarted" href="assets\vendor\join.html">Register</a>
+        <!-- Thay đổi phần nav-actions -->
+<div class="nav-actions">
+  <!-- User Section -->
+  <div id="userSection" style="display:none">
+    <div class="user-menu">
+      <div class="user-avatar"></div>
+      <div class="user-dropdown">
+          <a href="assets/vendor/profile.html">
+              <i class="fas fa-user"></i> Trang cá nhân
+          </a>
+          <a href="#" onclick="logout()">
+              <i class="fas fa-sign-out-alt"></i> Đăng xuất
+          </a>
       </div>
+  </div>
+  </div>
+  
+  <!-- Login Button -->
+  <a class="btn-getstarted" id="loginButton" href="assets/vendor/join.html">Đăng nhập</a>
+  
+  <!-- Cart Button -->
+  <!-- <button class="cart-btn">
+      <i class="fas fa-shopping-cart"></i>
+  </button> -->
+  
+  <!-- Cart Dropdown -->
+  <div class="cart-dropdown" id="cart-dropdown"></div>
+</div>
     </header>
 
     <main class="main">
@@ -1624,7 +1650,8 @@
     <script src="assets/vendor/swiper/swiper-bundle.min.js"></script>
 
     <!-- Main JS File -->
-    <script src="assets/js/main.js"></script>
+    <script type="module" src="assets/js/main.js"></script>
     <script type="module" src="assets/js/app.js"></script>
+    <script type="module" src="assets\js\auth.js"></script>
   </body>
 </html>

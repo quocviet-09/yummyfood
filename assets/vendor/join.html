@@ -7,14 +7,16 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
     />
-    <link rel="stylesheet" href="..\join.css" />
-    <title>Đăng nhập/ Đăng kí</title>
+    <link rel="stylesheet" href="../join.css" />
+    <title>Đăng nhập / Đăng ký</title>
   </head>
 
   <body>
     <div class="container" id="container">
+      <!-- Form đăng ký -->
+
       <div class="form-container sign-up">
-        <form>
+        <form id="registerForm">
           <h1>Tạo tài khoản</h1>
           <div class="social-icons">
             <a href="#" class="icon"
@@ -26,15 +28,21 @@
               ><i class="fa-brands fa-linkedin-in"></i
             ></a>
           </div>
-          <span>hoặc sử dụng email của bạn để đăng ký</span>
-          <input type="text" placeholder="Name" required />
-          <input type="email" placeholder="Email" required />
-          <input type="password" placeholder="Password" required />
-          <button>Đăng kí</button>
+          <span>hoặc sử dụng email để đăng ký</span>
+          <input type="text" id="registerName" placeholder="Họ tên" required />
+          <input type="email" id="registerEmail" placeholder="Email" required />
+          <input
+            type="password"
+            id="registerPassword"
+            placeholder="Mật khẩu"
+            required
+          />
+          <button type="submit">Đăng ký</button>
         </form>
       </div>
+
       <div class="form-container sign-in">
-        <form>
+        <form id="loginForm">
           <h1>Đăng nhập</h1>
           <div class="social-icons">
             <a href="#" class="icon"
@@ -46,55 +54,127 @@
               ><i class="fa-brands fa-linkedin-in"></i
             ></a>
           </div>
-          <span>hoặc sử dụng mật khẩu email của bạn</span>
-          <input type="email" placeholder="Email" required />
-          <input type="password" placeholder="Password" required />
-          <a href="#">Quên mật khẩu? </a>
-          <a href="/index.html">
-            <button id="loginBtn" type="button">Đăng nhập</button>
-          </a>
+          <span>hoặc sử dụng email của bạn</span>
+          <input type="email" id="loginEmail" placeholder="Email" required />
+          <input
+            type="password"
+            id="loginPassword"
+            placeholder="Mật khẩu"
+            required
+          />
+          <a href="#">Quên mật khẩu?</a>
+          <button type="submit">Đăng nhập</button>
         </form>
       </div>
+
+      <!-- Phần overlay -->
       <div class="toggle-container">
         <div class="toggle">
           <div class="toggle-panel toggle-left">
-            <h1>Chào mừng bạn trở lại!</h1>
-            <p>
-              Nhập thông tin cá nhân của bạn để sử dụng tất cả các tính năng của
-              trang web
-            </p>
+            <h1>Chào mừng trở lại!</h1>
+            <p>Đăng nhập để tiếp tục mua sắm với chúng tôi</p>
             <button class="hidden" id="login">Đăng nhập</button>
           </div>
           <div class="toggle-panel toggle-right">
-            <h1>Hello, Friend!</h1>
-            <p>
-              Đăng ký thông tin cá nhân của bạn để sử dụng tất cả các tính năng
-              của trang web
-            </p>
-            <button class="hidden" id="register">Đăng kí</button>
+            <h1>Xin chào!</h1>
+            <p>Đăng ký tài khoản để trải nghiệm mua sắm tuyệt vời</p>
+            <button class="hidden" id="register">Đăng ký</button>
           </div>
         </div>
       </div>
     </div>
 
-    <script>
+    <!-- Scripts -->
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
+      import {
+        getAuth,
+        createUserWithEmailAndPassword,
+        signInWithEmailAndPassword,
+      } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-auth.js";
+      import {
+        getFirestore,
+        doc,
+        setDoc,
+      } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
+
+      const firebaseConfig = {
+        apiKey: "AIzaSyDgxbPjC4jTB6celCX99czaHE29rKTlrsU",
+        authDomain: "web-jsi-ca20d.firebaseapp.com",
+        projectId: "web-jsi-ca20d",
+        storageBucket: "web-jsi-ca20d.firebasestorage.app",
+        messagingSenderId: "258234810998",
+        appId: "1:258234810998:web:bdaaeeda1d1ec8dd7e1557",
+        measurementId: "G-491DQCRDBC",
+      };
+
+      const app = initializeApp(firebaseConfig);
+      const auth = getAuth(app);
+      const db = getFirestore(app);
+
+      // Xử lý đăng ký
+      document.getElementById("registerForm").onsubmit = async (e) => {
+        e.preventDefault();
+        const name = document.getElementById("registerName").value;
+        const email = document.getElementById("registerEmail").value;
+        const password = document.getElementById("registerPassword").value;
+
+        try {
+          const userCredential = await createUserWithEmailAndPassword(
+            auth,
+            email,
+            password
+          );
+          await setDoc(doc(db, "users", userCredential.user.uid), {
+            name,
+            email,
+            createdAt: new Date().toISOString(),
+          });
+          alert("Đăng ký thành công!");
+          window.location.href = "/index.html";
+        } catch (error) {
+          alert("Lỗi: " + error.message);
+        }
+      };
+
+      // Xử lý đăng nhập
+      document.getElementById("loginForm").onsubmit = async (e) => {
+        e.preventDefault();
+        const email = document.getElementById("loginEmail").value;
+        const password = document.getElementById("loginPassword").value;
+
+        try {
+          const userCredential = await signInWithEmailAndPassword(
+            auth,
+            email,
+            password
+          );
+          const user = userCredential.user;
+          localStorage.setItem(
+            "user",
+            JSON.stringify({
+              uid: user.uid,
+              email: user.email,
+            })
+          );
+          window.location.href = "/index.html";
+        } catch (error) {
+          alert("Lỗi: " + error.message);
+        }
+      };
+
+      // Xử lý chuyển đổi form
       const container = document.getElementById("container");
       const registerBtn = document.getElementById("register");
-      const loginToggleBtn = document.getElementById("login"); // Nút chuyển về đăng nhập
-      const loginBtn = document.getElementById("loginBtn"); // Nút đăng nhập trong form
+      const loginBtn = document.getElementById("login");
 
       registerBtn.addEventListener("click", () => {
         container.classList.add("active");
       });
 
-      loginToggleBtn.addEventListener("click", () => {
+      loginBtn.addEventListener("click", () => {
         container.classList.remove("active");
       });
-
-      loginBtn.onclick = function () {
-        console.log(123);
-        // window.location = "/index.html";
-      };
     </script>
   </body>
 </html>
