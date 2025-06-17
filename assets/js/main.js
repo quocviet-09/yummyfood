@@ -221,6 +221,27 @@ window.logout = async () => {
 
 document.addEventListener("DOMContentLoaded", function () {
   // ...existing code for user authentication...
+  const avatar = document.querySelector(".user-avatar");
+  const dropdown = document.querySelector(".user-dropdown");
+
+  // Ẩn dropdown ban đầu
+  dropdown.style.display = "none";
+
+  // Toggle khi click vào avatar
+  avatar.addEventListener("click", function (e) {
+    e.stopPropagation();
+    dropdown.style.display =
+      dropdown.style.display === "none" || dropdown.style.display === ""
+        ? "block"
+        : "none";
+  });
+
+  // Ẩn dropdown khi click ra ngoài
+  document.addEventListener("click", function (e) {
+    if (!document.querySelector(".user-menu").contains(e.target)) {
+      dropdown.style.display = "none";
+    }
+  });
 
   // Add new cart functionality right after authentication code
   const cartBtn = document.querySelector(".cart-btn");

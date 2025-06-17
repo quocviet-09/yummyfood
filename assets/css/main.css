@@ -2011,6 +2011,16 @@ section,
 .btn-checkout {
   background: #ff724c;
   color: white;
+  text-decoration: none;
+  padding: 10px;
+  border-radius: 4px;
+  text-align: center;
+  flex: 1;
+  cursor: pointer;
+  border: none;
+}
+.btn-checkout:hover {
+  background: #ff5c2e;
 }
 
 .nav-actions {
