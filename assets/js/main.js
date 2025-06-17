@@ -218,23 +218,77 @@ window.logout = async () => {
 };
 
 // Thêm vào cuối file main.js
+
 document.addEventListener("DOMContentLoaded", function () {
-  const userAvatar = document.querySelector(".user-avatar");
-  const userDropdown = document.querySelector(".user-dropdown");
-  let isDropdownVisible = false;
+  // ...existing code for user authentication...
 
-  userAvatar.addEventListener("click", function (e) {
+  // Add new cart functionality right after authentication code
+  const cartBtn = document.querySelector(".cart-btn");
+  const cartDropdown = document.querySelector(".cart-dropdown");
+  let isCartVisible = false;
+
+  cartBtn.addEventListener("click", function (e) {
     e.stopPropagation();
-    if (isDropdownVisible) {
-      userDropdown.style.display = "none";
-    } else {
-      userDropdown.style.display = "block";
+    isCartVisible = !isCartVisible;
+    cartDropdown.style.display = isCartVisible ? "block" : "none";
+    if (isCartVisible) {
+      updateCartDisplay();
     }
-    isDropdownVisible = !isDropdownVisible;
   });
 
-  // Ngăn dropdown ẩn khi click vào các mục trong dropdown
-  userDropdown.addEventListener("click", function (e) {
-    e.stopPropagation();
+  document.addEventListener("click", function (e) {
+    if (!cartDropdown.contains(e.target) && !cartBtn.contains(e.target)) {
+      cartDropdown.style.display = "none";
+      isCartVisible = false;
+    }
   });
+
+  function updateCartDisplay() {
+    const cartItems = JSON.parse(localStorage.getItem("cart") || "[]");
+    const cartItemsContainer = document.querySelector(".cart-items");
+    const totalAmount = document.querySelector(".total-amount");
+    const cartCount = document.querySelector(".cart-count");
+
+    cartCount.textContent = cartItems.reduce(
+      (sum, item) => sum + item.quantity,
+      0
+    );
+
+    cartItemsContainer.innerHTML = cartItems
+      .map(
+        (item) => `
+            <div class="cart-item">
+                <img src="${item.image}" alt="${item.name}">
+                <div class="cart-item-info">
+                    <div class="cart-item-name">${item.name}</div>
+                    <div>Số lượng: ${item.quantity}</div>
+                </div>
+                <div class="cart-item-price">${
+                  item.price * item.quantity
+                }$</div>
+            </div>
+        `
+      )
+      .join("");
+
+    const total = cartItems.reduce(
+      (sum, item) => sum + item.price * item.quantity,
+      0
+    );
+    totalAmount.textContent = total + "$";
+  }
+
+  document.querySelector(".btn-clear").addEventListener("click", function () {
+    localStorage.removeItem("cart");
+    updateCartDisplay();
+  });
+
+  document
+    .querySelector(".btn-checkout")
+    .addEventListener("click", function () {
+      alert("Chuyển đến trang thanh toán...");
+    });
+
+  updateCartDisplay();
+  // ...existing code for dropdown menu...
 });

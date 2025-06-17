@@ -7,6 +7,15 @@
     <meta name="description" content="" />
     <meta name="keywords" content="" />
 
+    <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet"
+  />
+  <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+
     <!-- Favicons -->
     <link href="assets/img/favicon.png" rel="icon" />
     <link href="assets/img/apple-touch-icon.png" rel="apple-touch-icon" />
@@ -102,34 +111,45 @@
           <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
         </nav>
 
-        <!-- Thay đổi phần nav-actions -->
+       <!-- Thêm vào phần nav-actions -->
+<!-- Sửa lại phần nav-actions -->
 <div class="nav-actions">
   <!-- User Section -->
   <div id="userSection" style="display:none">
-    <div class="user-menu">
-      <div class="user-avatar"></div>
-      <div class="user-dropdown">
-          <a href="assets/vendor/profile.html">
-              <i class="fas fa-user"></i> Trang cá nhân
-          </a>
-          <a href="#" onclick="logout()">
-              <i class="fas fa-sign-out-alt"></i> Đăng xuất
-          </a>
+      <div class="user-menu">
+          <span id="userName" class="user-name"></span>
+          <div class="user-avatar"></div>
+          <div class="user-dropdown">
+              <a href="assets/vendor/profile.html">Trang cá nhân</a>
+              <button onclick="logout()" class="btn-logout">Đăng xuất</button>
+          </div>
       </div>
   </div>
-  </div>
-  
+
   <!-- Login Button -->
   <a class="btn-getstarted" id="loginButton" href="assets/vendor/join.html">Đăng nhập</a>
-  
-  <!-- Cart Button -->
-  <!-- <button class="cart-btn">
-      <i class="fas fa-shopping-cart"></i>
-  </button> -->
-  
-  <!-- Cart Dropdown -->
-  <div class="cart-dropdown" id="cart-dropdown"></div>
+
+  <!-- Giỏ hàng - đặt sau nút đăng nhập -->
+  <div class="cart-wrapper">
+    <button class="cart-btn">
+        <i class="fa-solid fa-cart-shopping"></i>
+        <span class="cart-count">0</span>
+    </button>
+    <div class="cart-dropdown">
+        <p>Giỏ hàng của bạn<p>
+        <div class="cart-items"></div>
+        <div class="cart-total">
+            <span>Tổng cộng: </span>
+            <span class="total-amount">0$</span>
+        </div>
+        <div class="cart-actions">
+            <button class="btn-checkout">Thanh toán</button>
+            <button class="btn-clear">Xóa giỏ</button>
+        </div>
+    </div>
 </div>
+</div>
+
     </header>
 
     <main class="main">
