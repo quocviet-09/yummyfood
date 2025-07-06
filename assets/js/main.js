@@ -281,3 +281,55 @@ document.addEventListener("click", function (e) {
     isCartVisible = false;
   }
 });
+
+function renderCart() {
+  const cart = JSON.parse(localStorage.getItem("cart") || "[]");
+  const cartItemsDiv = document.querySelector(".cart-items");
+  const cartCountSpan = document.querySelector(".cart-count");
+  const totalAmountSpan = document.querySelector(".total-amount");
+
+  // Hiển thị sản phẩm trong giỏ
+  if (cart.length === 0) {
+    cartItemsDiv.innerHTML = `<p style="color:#ff724c;font-weight:600;">Giỏ hàng của bạn trống.</p>`;
+    totalAmountSpan.textContent = "0$";
+    cartCountSpan.textContent = "0";
+    return;
+  }
+
+  cartItemsDiv.innerHTML = cart
+    .map(
+      (item) => `
+    <div class="cart-item" style="display:flex;align-items:center;margin-bottom:10px;">
+      <img src="${item.image}" alt="${item.name}" style="width:48px;height:48px;object-fit:cover;border-radius:6px;margin-right:10px;">
+      <div style="flex:1;">
+        <div style="font-weight:600;color:#222;">${item.name}</div>
+        <div style="font-size:14px;color:#555;">Số lượng: ${item.quantity}</div>
+      </div>
+      <div style="font-weight:600;color:#ff724c;">${item.price}$</div>
+    </div>
+  `
+    )
+    .join("");
+
+  // Cập nhật số lượng sản phẩm
+  cartCountSpan.textContent = cart.reduce(
+    (sum, item) => sum + item.quantity,
+    0
+  );
+
+  // Cập nhật tổng tiền
+  const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  totalAmountSpan.textContent = `${total}$`;
+}
+
+// Lắng nghe sự kiện cập nhật giỏ hàng
+window.addEventListener("cartUpdated", renderCart);
+
+// Khi load trang cũng render giỏ hàng
+document.addEventListener("DOMContentLoaded", renderCart);
+
+// Nút xóa giỏ hàng
+document.querySelector(".btn-clear")?.addEventListener("click", function () {
+  localStorage.removeItem("cart");
+  window.dispatchEvent(new Event("cartUpdated"));
+});
