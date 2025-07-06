@@ -243,73 +243,41 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
-  // Add new cart functionality right after authentication code
-  const cartBtn = document.querySelector(".cart-btn");
-  const cartDropdown = document.querySelector(".cart-dropdown");
-  let isCartVisible = false;
-
-  cartBtn.addEventListener("click", function (e) {
-    e.stopPropagation();
-    isCartVisible = !isCartVisible;
-    cartDropdown.style.display = isCartVisible ? "block" : "none";
-    if (isCartVisible) {
-      updateCartDisplay();
+  // Xử lý nút thanh toán
+  document.body.addEventListener("click", function (e) {
+    if (e.target.classList.contains("btn-checkout")) {
+      e.preventDefault();
+      // Kiểm tra đăng nhập (ví dụ dùng localStorage, hoặc Firebase Auth)
+      // Ví dụ: nếu bạn lưu user khi đăng nhập vào localStorage
+      const user = localStorage.getItem("user");
+      if (!user) {
+        alert("Bạn cần đăng nhập để thanh toán!");
+        window.location.href = "assets/vendor/join.html";
+        return;
+      }
+      // Nếu đã đăng nhập, chuyển sang trang thanh toán
+      window.location.href = "assets/vendor/checkout.html";
     }
   });
+});
 
-  document.addEventListener("click", function (e) {
-    if (!cartDropdown.contains(e.target) && !cartBtn.contains(e.target)) {
-      cartDropdown.style.display = "none";
-      isCartVisible = false;
-    }
-  });
+// Add new cart functionality right after authentication code
+const cartBtn = document.querySelector(".cart-btn");
+const cartDropdown = document.querySelector(".cart-dropdown");
+let isCartVisible = false;
 
-  function updateCartDisplay() {
-    const cartItems = JSON.parse(localStorage.getItem("cart") || "[]");
-    const cartItemsContainer = document.querySelector(".cart-items");
-    const totalAmount = document.querySelector(".total-amount");
-    const cartCount = document.querySelector(".cart-count");
-
-    cartCount.textContent = cartItems.reduce(
-      (sum, item) => sum + item.quantity,
-      0
-    );
-
-    cartItemsContainer.innerHTML = cartItems
-      .map(
-        (item) => `
-            <div class="cart-item">
-                <img src="${item.image}" alt="${item.name}">
-                <div class="cart-item-info">
-                    <div class="cart-item-name">${item.name}</div>
-                    <div>Số lượng: ${item.quantity}</div>
-                </div>
-                <div class="cart-item-price">${
-                  item.price * item.quantity
-                }$</div>
-            </div>
-        `
-      )
-      .join("");
-
-    const total = cartItems.reduce(
-      (sum, item) => sum + item.price * item.quantity,
-      0
-    );
-    totalAmount.textContent = total + "$";
-  }
-
-  document.querySelector(".btn-clear").addEventListener("click", function () {
-    localStorage.removeItem("cart");
+cartBtn.addEventListener("click", function (e) {
+  e.stopPropagation();
+  isCartVisible = !isCartVisible;
+  cartDropdown.style.display = isCartVisible ? "block" : "none";
+  if (isCartVisible) {
     updateCartDisplay();
-  });
+  }
+});
 
-  document
-    .querySelector(".btn-checkout")
-    .addEventListener("click", function () {
-      alert("Chuyển đến trang thanh toán...");
-    });
-
-  updateCartDisplay();
-  // ...existing code for dropdown menu...
+document.addEventListener("click", function (e) {
+  if (!cartDropdown.contains(e.target) && !cartBtn.contains(e.target)) {
+    cartDropdown.style.display = "none";
+    isCartVisible = false;
+  }
 });
