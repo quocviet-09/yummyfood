@@ -10,131 +10,251 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
     />
     <style>
-      .orders-container {
-        max-width: 900px;
-        margin: 40px auto;
-        background: #fff;
-        border-radius: 12px;
-        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-        padding: 32px;
-      }
-      .order-item {
-        border-bottom: 1px solid #eee;
-        padding: 18px 0;
-      }
-      .order-item:last-child {
-        border-bottom: none;
-      }
-      .order-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 8px;
-      }
-      .order-status {
-        font-weight: 600;
-        color: #ff724c;
-      }
-      .order-products {
-        margin: 8px 0 0 0;
-        font-size: 15px;
-      }
-      .order-products span {
-        display: inline-block;
-        margin-right: 12px;
-        color: #333;
-      }
-      .order-total {
-        font-weight: 600;
-        color: #333;
-        margin-top: 8px;
-      }
-      .order-date {
-        color: #888;
-        font-size: 13px;
-      }
-    </style>
+        body {
+          background: #f8f9fa;
+          font-family: 'Segoe UI', Arial, sans-serif;
+        }
+        .orders-container {
+          max-width: 900px;
+          margin: 40px auto;
+          background: #fff;
+          border-radius: 16px;
+          box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+          padding: 40px 32px 32px 32px;
+          min-height: 300px;
+        }
+        .orders-container h2 {
+          font-size: 2rem;
+          font-weight: 700;
+          margin-bottom: 28px;
+          color: #222;
+          letter-spacing: 1px;
+        }
+        .order-item {
+          border: 1px solid #f1f1f1;
+          border-radius: 12px;
+          margin-bottom: 28px;
+          padding: 24px 28px;
+          background: #fafbfc;
+          transition: box-shadow 0.2s;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+        }
+        .order-item:hover {
+          box-shadow: 0 6px 24px rgba(255,114,76,0.10);
+          border-color: #ff724c33;
+        }
+        .order-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 10px;
+        }
+        .order-header span {
+          font-size: 1.1rem;
+        }
+        .order-status {
+          font-weight: 700;
+          color: #fff;
+          background: #ff724c;
+          padding: 4px 16px;
+          border-radius: 16px;
+          font-size: 0.95rem;
+          letter-spacing: 0.5px;
+          box-shadow: 0 1px 4px #ff724c22;
+        }
+        .order-date {
+          color: #888;
+          font-size: 0.98rem;
+          margin-bottom: 8px;
+        }
+        .order-shipping {
+          background: #fff;
+          border-radius: 8px;
+          padding: 12px 16px;
+          margin-bottom: 10px;
+          font-size: 1rem;
+          color: #444;
+          border: 1px solid #f3f3f3;
+        }
+        .order-shipping b {
+          color: #222;
+        }
+        .order-products {
+          margin: 10px 0 0 0;
+          font-size: 1rem;
+          color: #333;
+          padding-left: 8px;
+        }
+        .order-products span {
+          display: block;
+          margin-bottom: 3px;
+          color: #444;
+        }
+        .order-total {
+          font-weight: 700;
+          color: #ff724c;
+          margin-top: 14px;
+          font-size: 1.1rem;
+          text-align: right;
+        }
+        @media (max-width: 600px) {
+          .orders-container {
+            padding: 12px 4px;
+          }
+          .order-item {
+            padding: 12px 8px;
+          }
+        }
+      </style>
   </head>
   <body>
     <div class="orders-container">
       <h2>Đơn hàng của tôi</h2>
-      <div id="ordersList">Đang tải...</div>
+      <!-- ...existing code... -->
+<div id="ordersList">Đang tải...</div>
+<!-- Thêm modal chỉnh sửa -->
+<!-- ...existing code... -->
+<div id="editModal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:#0006;z-index:1000;align-items:center;justify-content:center;">
+    <div style="background:#fff;padding:32px 24px;border-radius:12px;min-width:320px;max-width:90vw;box-shadow:0 8px 32px #0002;position:relative;">
+      <h3>Sửa đơn hàng</h3>
+      <form id="editOrderForm">
+        <input type="hidden" id="editOrderId" />
+        <div style="margin-bottom:12px;">
+          <label>Địa chỉ giao hàng</label>
+          <input type="text" id="editAddress" style="width:100%;padding:8px;margin-top:4px;" required />
+        </div>
+        <div style="margin-bottom:12px;">
+          <label>Phương thức thanh toán</label>
+          <select id="editPayment" style="width:100%;padding:8px;margin-top:4px;">
+            <option value="Tiền mặt">Tiền mặt</option>
+            <option value="Chuyển khoản">Chuyển khoản</option>
+            <option value="Momo">Momo</option>
+            <option value="ZaloPay">ZaloPay</option>
+          </select>
+        </div>
+        <div style="margin-bottom:12px;">
+          <label>Ghi chú</label>
+          <textarea id="editNote" style="width:100%;padding:8px;margin-top:4px;"></textarea>
+        </div>
+        <div style="text-align:right;">
+          <button type="button" onclick="closeEditModal()" style="margin-right:8px;">Hủy</button>
+          <button type="submit" style="background:#ff724c;color:#fff;padding:8px 18px;border:none;border-radius:6px;">Lưu</button>
+        </div>
+      </form>
+      <span onclick="closeEditModal()" style="position:absolute;top:8px;right:16px;cursor:pointer;font-size:20px;">&times;</span>
     </div>
-    <script type="module">
-      import { auth, db } from "../js/auth.js";
-      import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-auth.js";
-      import {
-        collection,
-        query,
-        where,
-        getDocs,
-        orderBy,
-      } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
-
-      onAuthStateChanged(auth, async (user) => {
-        const ordersList = document.getElementById("ordersList");
-        if (!user) {
-          alert("Vui lòng đăng nhập để xem đơn hàng của bạn!");
-          window.location.href = "join.html";
+  </div>
+  <!-- ...existing code... -->
+  <script type="module">
+    import { auth, db } from "../js/auth.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-auth.js";
+    import {
+      collection,
+      query,
+      where,
+      getDocs,
+      orderBy,
+      doc,
+      updateDoc,
+    } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
+  
+    // Hiển thị modal sửa
+    window.openEditModal = (orderId, address, note, payment) => {
+      document.getElementById("editOrderId").value = orderId;
+      document.getElementById("editAddress").value = address || "";
+      document.getElementById("editNote").value = note || "";
+      document.getElementById("editPayment").value = payment || "Tiền mặt";
+      document.getElementById("editModal").style.display = "flex";
+    };
+    window.closeEditModal = () => {
+      document.getElementById("editModal").style.display = "none";
+    };
+  
+    // Xử lý lưu chỉnh sửa
+    document.getElementById("editOrderForm").onsubmit = async (e) => {
+      e.preventDefault();
+      const orderId = document.getElementById("editOrderId").value;
+      const address = document.getElementById("editAddress").value;
+      const note = document.getElementById("editNote").value;
+      const payment = document.getElementById("editPayment").value;
+      try {
+        await updateDoc(doc(db, "orders", orderId), {
+          "shipping.address": address,
+          "shipping.note": note,
+          "shipping.payment": payment,
+        });
+        alert("Cập nhật thành công!");
+        window.closeEditModal();
+        window.location.reload();
+      } catch (err) {
+        alert("Lỗi: " + err.message);
+      }
+    };
+  
+    onAuthStateChanged(auth, async (user) => {
+      const ordersList = document.getElementById("ordersList");
+      if (!user) {
+        alert("Vui lòng đăng nhập để xem đơn hàng của bạn!");
+        window.location.href = "join.html";
+        return;
+      }
+      try {
+        const q = query(
+          collection(db, "orders"),
+          where("userId", "==", user.uid),
+          orderBy("createdAt", "desc")
+        );
+        const querySnapshot = await getDocs(q);
+        if (querySnapshot.empty) {
+          ordersList.innerHTML = "<p>Bạn chưa có đơn hàng nào.</p>";
           return;
         }
-        console.log("Đang đăng nhập với uid:", user.uid);
-        try {
-          const q = query(
-            collection(db, "orders"),
-            where("userId", "==", user.uid),
-            orderBy("createdAt", "desc")
-          );
-          const querySnapshot = await getDocs(q);
-          console.log("Số lượng đơn hàng tìm thấy:", querySnapshot.size);
-          if (querySnapshot.empty) {
-            ordersList.innerHTML = "<p>Bạn chưa có đơn hàng nào.</p>";
-            return;
-          }
-          ordersList.innerHTML = "";
-          querySnapshot.forEach((doc) => {
-            const order = doc.data();
-            console.log("Đơn hàng:", order);
-            ordersList.innerHTML += `
-        <div class="order-item">
-          <div class="order-header">
-            <span>Mã đơn: <b>${doc.id}</b></span>
-            <span class="order-status">${order.status || "pending"}</span>
+        ordersList.innerHTML = "";
+        querySnapshot.forEach((docSnap) => {
+          const order = docSnap.data();
+          ordersList.innerHTML += `
+          <div class="order-item">
+            <div class="order-header">
+              <span>Mã đơn: <b>${docSnap.id}</b></span>
+              <span class="order-status">${order.status || "pending"}</span>
+            </div>
+            <div class="order-date">Ngày đặt: ${new Date(order.createdAt).toLocaleString()}</div>
+            <div class="order-shipping">
+              <b>Người nhận:</b> ${order.shipping?.name || ""} <br>
+              <b>SĐT:</b> ${order.shipping?.phone || ""} <br>
+              <b>Email:</b> ${order.shipping?.email || ""} <br>
+              <b>Địa chỉ:</b> ${order.shipping?.address || ""} <br>
+              <b>Phương thức thanh toán:</b> ${order.shipping?.payment || "Chưa chọn"} <br>
+              <b>Ghi chú:</b> ${order.shipping?.note || ""}
+              <br>
+              <button onclick="openEditModal(
+                '${docSnap.id}',
+                '${order.shipping?.address?.replace(/'/g,"\\'") || ""}',
+                '${order.shipping?.note?.replace(/'/g,"\\'") || ""}',
+                '${order.shipping?.payment?.replace(/'/g,"\\'") || "Tiền mặt"}'
+              )" style="margin-top:8px;background:#ff724c;color:#fff;padding:6px 16px;border:none;border-radius:6px;cursor:pointer;">Sửa thông tin</button>
+            </div>
+            <div class="order-products" style="margin-top:10px;">
+              <b>Sản phẩm:</b><br>
+              ${order.items
+                .map(
+                  (item) => `
+                <span>${item.name} x ${item.quantity} (${item.price}$)</span>
+              `
+                )
+                .join("<br>")}
+            </div>
+            <div class="order-total" style="margin-top:10px;">
+              Tổng cộng: <span style="color:#ff724c">${order.total}$</span>
+            </div>
           </div>
-          <div class="order-date">Ngày đặt: ${new Date(
-            order.createdAt
-          ).toLocaleString()}</div>
-          <div class="order-shipping">
-            <b>Người nhận:</b> ${order.shipping?.name || ""} <br>
-            <b>SĐT:</b> ${order.shipping?.phone || ""} <br>
-            <b>Email:</b> ${order.shipping?.email || ""} <br>
-            <b>Địa chỉ:</b> ${order.shipping?.address || ""} <br>
-            <b>Phương thức thanh toán:</b> ${
-              order.shipping?.payment || "Chưa chọn"
-            } <br>
-            <b>Ghi chú:</b> ${order.shipping?.note || ""}
-          </div>
-          <div class="order-products" style="margin-top:10px;">
-            <b>Sản phẩm:</b><br>
-            ${order.items
-              .map(
-                (item) => `
-              <span>${item.name} x ${item.quantity} (${item.price}$)</span>
-            `
-              )
-              .join("<br>")}
-          </div>
-          <div class="order-total" style="margin-top:10px;">
-            Tổng cộng: <span style="color:#ff724c">${order.total}$</span>
-          </div>
-        </div>
-      `;
-          });
-        } catch (error) {
-          ordersList.innerHTML = `<p style="color:red">Lỗi: ${error.message}</p>`;
-          console.error(error);
-        }
-      });
-    </script>
+        `;
+        });
+      } catch (error) {
+        console.error("Lỗi khi lấy đơn hàng:", error);
+        ordersList.innerHTML = "<p>Không thể tải đơn hàng. Vui lòng thử lại sau.</p>";
+      }
+    });
+  </script>
   </body>
 </html>
