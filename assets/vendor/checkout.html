@@ -494,11 +494,53 @@
           // Xóa giỏ hàng và chuyển hướng
           localStorage.removeItem("cart");
           alert("Đặt hàng thành công!");
-          window.location.href = "../../index.html";
+          window.location.href = "my-orders.html";
         } catch (error) {
           alert("Có lỗi xảy ra: " + error.message);
         }
       };
+      // ...existing code...
+      // Xử lý đặt hàng
+      window.processCheckout = async () => {
+        const form = document.getElementById("checkoutForm");
+        if (!form.checkValidity()) {
+          alert("Vui lòng điền đầy đủ thông tin");
+          return;
+        }
+
+        try {
+          const user = auth.currentUser;
+          const cart = JSON.parse(localStorage.getItem("cart") || "[]");
+          const { total } = loadCart();
+
+          // Tạo đơn hàng mới
+          const orderData = {
+            userId: user.uid,
+            items: cart,
+            total: total,
+            shipping: {
+              name: document.getElementById("name").value,
+              phone: document.getElementById("phone").value,
+              email: document.getElementById("email").value,
+              address: document.getElementById("address").value,
+              note: document.getElementById("note").value,
+            },
+            status: "pending",
+            createdAt: new Date().toISOString(),
+          };
+
+          // Lưu đơn hàng vào Firestore
+          await addDoc(collection(db, "orders"), orderData);
+
+          // Xóa giỏ hàng và chuyển hướng sang trang đơn hàng của tôi
+          localStorage.removeItem("cart");
+          alert("Đặt hàng thành công!");
+          window.location.href = "my-orders.html";
+        } catch (error) {
+          alert("Có lỗi xảy ra: " + error.message);
+        }
+      };
+      // ...existing code...
 
       // Load giỏ hàng khi trang được tải
       loadCart();

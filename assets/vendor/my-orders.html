@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Đơn hàng của tôi | KICHI-KICHI</title>
+    <link rel="stylesheet" href="../css/main.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
+    />
+    <style>
+      .orders-container {
+        max-width: 900px;
+        margin: 40px auto;
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        padding: 32px;
+      }
+      .order-item {
+        border-bottom: 1px solid #eee;
+        padding: 18px 0;
+      }
+      .order-item:last-child {
+        border-bottom: none;
+      }
+      .order-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+      }
+      .order-status {
+        font-weight: 600;
+        color: #ff724c;
+      }
+      .order-products {
+        margin: 8px 0 0 0;
+        font-size: 15px;
+      }
+      .order-products span {
+        display: inline-block;
+        margin-right: 12px;
+        color: #333;
+      }
+      .order-total {
+        font-weight: 600;
+        color: #333;
+        margin-top: 8px;
+      }
+      .order-date {
+        color: #888;
+        font-size: 13px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="orders-container">
+      <h2>Đơn hàng của tôi</h2>
+      <div id="ordersList">Đang tải...</div>
+    </div>
+    <script type="module">
+      import { auth, db } from "../js/auth.js";
+      import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-auth.js";
+      import {
+        collection,
+        query,
+        where,
+        getDocs,
+        orderBy,
+      } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
+
+      onAuthStateChanged(auth, async (user) => {
+        const ordersList = document.getElementById("ordersList");
+        if (!user) {
+          alert("Vui lòng đăng nhập để xem đơn hàng của bạn!");
+          window.location.href = "join.html";
+          return;
+        }
+        console.log("Đang đăng nhập với uid:", user.uid);
+        try {
+          const q = query(
+            collection(db, "orders"),
+            where("userId", "==", user.uid),
+            orderBy("createdAt", "desc")
+          );
+          const querySnapshot = await getDocs(q);
+          console.log("Số lượng đơn hàng tìm thấy:", querySnapshot.size);
+          if (querySnapshot.empty) {
+            ordersList.innerHTML = "<p>Bạn chưa có đơn hàng nào.</p>";
+            return;
+          }
+          ordersList.innerHTML = "";
+          querySnapshot.forEach((doc) => {
+            const order = doc.data();
+            console.log("Đơn hàng:", order);
+            ordersList.innerHTML += `
+        <div class="order-item">
+          <div class="order-header">
+            <span>Mã đơn: <b>${doc.id}</b></span>
+            <span class="order-status">${order.status || "pending"}</span>
+          </div>
+          <div class="order-date">Ngày đặt: ${new Date(
+            order.createdAt
+          ).toLocaleString()}</div>
+          <div class="order-shipping">
+            <b>Người nhận:</b> ${order.shipping?.name || ""} <br>
+            <b>SĐT:</b> ${order.shipping?.phone || ""} <br>
+            <b>Email:</b> ${order.shipping?.email || ""} <br>
+            <b>Địa chỉ:</b> ${order.shipping?.address || ""} <br>
+            <b>Phương thức thanh toán:</b> ${
+              order.shipping?.payment || "Chưa chọn"
+            } <br>
+            <b>Ghi chú:</b> ${order.shipping?.note || ""}
+          </div>
+          <div class="order-products" style="margin-top:10px;">
+            <b>Sản phẩm:</b><br>
+            ${order.items
+              .map(
+                (item) => `
+              <span>${item.name} x ${item.quantity} (${item.price}$)</span>
+            `
+              )
+              .join("<br>")}
+          </div>
+          <div class="order-total" style="margin-top:10px;">
+            Tổng cộng: <span style="color:#ff724c">${order.total}$</span>
+          </div>
+        </div>
+      `;
+          });
+        } catch (error) {
+          ordersList.innerHTML = `<p style="color:red">Lỗi: ${error.message}</p>`;
+          console.error(error);
+        }
+      });
+    </script>
+  </body>
+</html>
