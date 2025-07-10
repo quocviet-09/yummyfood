@@ -169,7 +169,7 @@ async function getProductDetail() {
       // Lưu thông tin đơn hàng và chuyển đến trang thanh toán
       localStorage.setItem("quickOrder", JSON.stringify(orderData));
       alert("Đang chuyển đến trang thanh toán...");
-      // window.location.href = "checkout.html"; // Uncomment khi có trang checkout
+      window.location.href = "assets/vendor/checkout.html";
     };
   });
 }
@@ -374,7 +374,7 @@ function renderCartDropdown() {
   });
   html += `<div class="cart-total">Tổng cộng: ${total}$</div>
     <div class="cart-actions">
-      <button onclick="window.location.href='checkout.html'">Thanh toán</button>
+      <button onclick="window.location.href='assets/vendor/checkout.html'">Thanh toán</button>
       <button onclick="clearCart()">Xóa giỏ</button>
     </div>`;
   cartDropdown.innerHTML = html;

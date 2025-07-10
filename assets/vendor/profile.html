@@ -18,14 +18,12 @@
         border-radius: 15px;
         box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
       }
-
       .profile-header {
         text-align: center;
         margin-bottom: 40px;
         padding-bottom: 20px;
         border-bottom: 2px solid #f0f0f0;
       }
-
       .profile-avatar {
         width: 120px;
         height: 120px;
@@ -36,39 +34,32 @@
         align-items: center;
         justify-content: center;
       }
-
       .profile-avatar i {
         font-size: 60px;
         color: #666;
       }
-
       .profile-title {
         color: var(--accent-color);
         font-size: 24px;
         margin-bottom: 5px;
       }
-
       .profile-subtitle {
         color: #666;
         font-size: 16px;
       }
-
       .profile-form {
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 25px;
       }
-
       .form-group {
         display: flex;
         flex-direction: column;
         gap: 8px;
       }
-
       .form-group.full-width {
         grid-column: 1 / -1;
       }
-
       .form-group label {
         font-weight: 500;
         color: #333;
@@ -76,11 +67,9 @@
         align-items: center;
         gap: 8px;
       }
-
       .form-group label i {
         color: var(--accent-color);
       }
-
       .form-group input,
       .form-group textarea {
         padding: 12px;
@@ -89,14 +78,12 @@
         font-size: 15px;
         transition: all 0.3s;
       }
-
       .form-group input:focus,
       .form-group textarea:focus {
         border-color: var(--accent-color);
         box-shadow: 0 0 0 3px rgba(206, 82, 82, 0.1);
         outline: none;
       }
-
       .form-actions {
         grid-column: 1 / -1;
         display: flex;
@@ -104,7 +91,6 @@
         gap: 15px;
         margin-top: 20px;
       }
-
       .btn {
         padding: 12px 30px;
         border: none;
@@ -114,21 +100,17 @@
         cursor: pointer;
         transition: all 0.3s;
       }
-
       .btn-primary {
         background: var(--accent-color);
         color: white;
       }
-
       .btn-primary:hover {
         background: #b84444;
       }
-
       .btn-secondary {
         background: #f0f0f0;
         color: #333;
       }
-
       .btn-secondary:hover {
         background: #e0e0e0;
       }
@@ -149,7 +131,7 @@
         <div class="form-column">
           <div class="form-group">
             <label><i class="fas fa-user"></i> Họ và Tên</label>
-            <input type="text" id="profileFirstName" required />
+            <input type="text" id="profileName" required />
           </div>
 
           <div class="form-group">
@@ -166,7 +148,7 @@
 
           <div class="form-group">
             <label><i class="fas fa-envelope"></i> Email</label>
-            <input type="email" id="profileEmail" readonly />
+            <input type="email" id="profileEmail" required />
           </div>
         </div>
 
@@ -213,13 +195,14 @@
         doc,
         getDoc,
         updateDoc,
+        setDoc,
       } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
 
       const firebaseConfig = {
         apiKey: "AIzaSyDgxbPjC4jTB6celCX99czaHE29rKTlrsU",
         authDomain: "web-jsi-ca20d.firebaseapp.com",
         projectId: "web-jsi-ca20d",
-        storageBucket: "web-jsi-ca20d.firebasestorage.app",
+        storageBucket: "web-jsi-ca20d.appspot.com",
         messagingSenderId: "258234810998",
         appId: "1:258234810998:web:bdaaeeda1d1ec8dd7e1557",
         measurementId: "G-491DQCRDBC",
@@ -233,10 +216,11 @@
       onAuthStateChanged(auth, async (user) => {
         if (user) {
           const userDoc = await getDoc(doc(db, "users", user.uid));
-          const userData = userDoc.data();
+          const userData = userDoc.data() || {};
 
           document.getElementById("profileName").value = userData.name || "";
-          document.getElementById("profileEmail").value = userData.email || "";
+          document.getElementById("profileEmail").value =
+            userData.email || user.email || "";
           document.getElementById("profilePhone").value = userData.phone || "";
           document.getElementById("profileBirthday").value =
             userData.birthday || "";
@@ -254,15 +238,23 @@
         const user = auth.currentUser;
 
         if (user) {
+          const userRef = doc(db, "users", user.uid);
+          const userData = {
+            name: document.getElementById("profileName").value,
+            phone: document.getElementById("profilePhone").value,
+            birthday: document.getElementById("profileBirthday").value,
+            address: document.getElementById("profileAddress").value,
+            note: document.getElementById("profileNote").value,
+            email: document.getElementById("profileEmail").value,
+            updatedAt: new Date().toISOString(),
+          };
           try {
-            await updateDoc(doc(db, "users", user.uid), {
-              name: document.getElementById("profileName").value,
-              phone: document.getElementById("profilePhone").value,
-              birthday: document.getElementById("profileBirthday").value,
-              address: document.getElementById("profileAddress").value,
-              note: document.getElementById("profileNote").value,
-              updatedAt: new Date().toISOString(),
-            });
+            const docSnap = await getDoc(userRef);
+            if (docSnap.exists()) {
+              await updateDoc(userRef, userData);
+            } else {
+              await setDoc(userRef, userData);
+            }
             alert("Cập nhật thông tin thành công!");
             window.location.href = "/index.html";
           } catch (error) {
