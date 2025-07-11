@@ -96,6 +96,10 @@
         getFirestore,
         doc,
         setDoc,
+        updateDoc,
+        serverTimestamp,
+        collection,
+        addDoc,
       } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
 
       const firebaseConfig = {
@@ -125,7 +129,8 @@
             email,
             password
           );
-          await setDoc(doc(db, "users", userCredential.user.uid), {
+          // Lưu thông tin vào Firestore
+          await setDoc(doc(db, "login_logs", userCredential.user.uid), {
             name,
             email,
             createdAt: new Date().toISOString(),
@@ -162,7 +167,6 @@
           alert("Lỗi: " + error.message);
         }
       };
-
       // Xử lý chuyển đổi form
       const container = document.getElementById("container");
       const registerBtn = document.getElementById("register");
