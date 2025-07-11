@@ -19,32 +19,59 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-const foodName = location.search.split("food=")[1];
+// Parse URL parameters to get food identifier and collection
+function parseURLParams() {
+  const urlParams = new URLSearchParams(location.search);
+
+  // Check for different parameter types
+  const paramTypes = ['food', 'breakfast', 'lunch', 'dinner'];
+
+  for (const paramType of paramTypes) {
+    const value = urlParams.get(paramType);
+    if (value) {
+      return {
+        collection: paramType === 'food' ? 'food' : paramType,
+        foodName: value,
+        paramType
+      };
+    }
+  }
+
+  return null;
+}
+
+const urlData = parseURLParams();
 console.log("🚀 ~ location.search:", location.search.split("food="));
 
 async function getProductDetail() {
-  const productCollection = query(
-    collection(db, "food"),
-    where("url", "==", foodName)
-  );
-  const querySnapshot = await getDocs(productCollection);
-
-  if (querySnapshot.empty) {
+  if (!urlData) {
     document.getElementById("product-detail").innerHTML =
-      "<p>Không tìm thấy sản phẩm.</p>";
+      "<p>Không tìm thấy thông tin sản phẩm trong URL.</p>";
     return;
   }
-  querySnapshot.forEach((doc) => {
-    const product = doc.data();
 
-    // HTML chi tiết sản phẩm với thiết kế mới
-    document.getElementById("product-detail").innerHTML = `
+  try {
+    const productCollection = query(
+      collection(db, urlData.collection),
+      where("url", "==", urlData.foodName)
+    );
+    const querySnapshot = await getDocs(productCollection);
+
+    if (querySnapshot.empty) {
+      document.getElementById("product-detail").innerHTML =
+        "<p>Không tìm thấy sản phẩm.</p>";
+      return;
+    }
+    querySnapshot.forEach((doc) => {
+      const product = doc.data();
+
+      // HTML chi tiết sản phẩm với thiết kế mới
+      document.getElementById("product-detail").innerHTML = `
       <div class="product-detail-card">
         <div class="product-image-section">
           <div class="product-img">
-            <img src="${
-              product.thumbnail || "assets/img/menu/menu-item-1.png"
-            }" alt="${product.Name}" />
+            <img src="${product.thumbnail || "assets/img/menu/menu-item-1.png"
+        }" alt="${product.Name}" />
             <div class="product-badge">Món mới</div>
           </div>
         </div>
@@ -63,19 +90,17 @@ async function getProductDetail() {
           </div>
 
           <div class="product-price">
-            <span class="current-price" id="current-price">${
-              product.Price || 0
-            }$</span>
+            <span class="current-price" id="current-price">${product.Price || 0
+        }$</span>
             <span class="original-price">${(product.Price * 1.2 || 0).toFixed(
-              0
-            )}$</span>
+          0
+        )}$</span>
             <span class="discount-badge">-20%</span>
           </div>
 
-          <p class="product-description">${
-            product.Information ||
-            "Món ăn ngon tuyệt vời với hương vị độc đáo, được chế biến từ những nguyên liệu tươi ngon nhất."
-          }</p>
+          <p class="product-description">${product.Information ||
+        "Món ăn ngon tuyệt vời với hương vị độc đáo, được chế biến từ những nguyên liệu tươi ngon nhất."
+        }</p>
 
           <div class="quantity-section">
             <label class="quantity-label">Số lượng:</label>
@@ -100,78 +125,83 @@ async function getProductDetail() {
       </div>
     `;
 
-    // Cập nhật mô tả trong tab
-    document.getElementById("product-description").textContent =
-      product.Information ||
-      "Món ăn ngon tuyệt vời với hương vị độc đáo, được chế biến từ những nguyên liệu tươi ngon nhất."; // Xử lý tăng giảm số lượng và cập nhật giá
-    const quantityInput = document.getElementById("quantity");
-    const currentPriceSpan = document.getElementById("current-price");
-    const basePrice = Number(product.Price || 0);
+      // Cập nhật mô tả trong tab
+      document.getElementById("product-description").textContent =
+        product.Information ||
+        "Món ăn ngon tuyệt vời với hương vị độc đáo, được chế biến từ những nguyên liệu tươi ngon nhất."; // Xử lý tăng giảm số lượng và cập nhật giá
+      const quantityInput = document.getElementById("quantity");
+      const currentPriceSpan = document.getElementById("current-price");
+      const basePrice = Number(product.Price || 0);
 
-    function updatePrice() {
-      const quantity = Number(quantityInput.value);
-      currentPriceSpan.textContent = `${(basePrice * quantity).toFixed(0)}$`;
-    }
+      function updatePrice() {
+        const quantity = Number(quantityInput.value);
+        currentPriceSpan.textContent = `${(basePrice * quantity).toFixed(0)}$`;
+      }
 
-    document.getElementById("increase").onclick = () => {
-      quantityInput.value = Number(quantityInput.value) + 1;
-      updatePrice();
-    };
-
-    document.getElementById("decrease").onclick = () => {
-      if (Number(quantityInput.value) > 1) {
-        quantityInput.value = Number(quantityInput.value) - 1;
+      document.getElementById("increase").onclick = () => {
+        quantityInput.value = Number(quantityInput.value) + 1;
         updatePrice();
-      }
-    };
-
-    quantityInput.oninput = () => {
-      let val = Number(quantityInput.value);
-      if (val < 1) val = 1;
-      quantityInput.value = val;
-      updatePrice();
-    };
-
-    // Thêm vào giỏ hàng
-    document.getElementById("add-to-cart").onclick = () => {
-      const cart = JSON.parse(localStorage.getItem("cart") || "[]");
-      const productId = doc.id;
-      const quantityToAdd = Number(quantityInput.value);
-
-      // Kiểm tra sản phẩm đã có trong giỏ chưa
-      const existing = cart.find((item) => item.id === productId);
-      if (existing) {
-        existing.quantity += quantityToAdd;
-      } else {
-        cart.push({
-          id: productId,
-          name: product.Name,
-          image: product.thumbnail,
-          price: basePrice,
-          quantity: quantityToAdd,
-        });
-      }
-      localStorage.setItem("cart", JSON.stringify(cart));
-      updateCartCount();
-      alert("Đã thêm vào giỏ hàng!");
-    };
-    // Mua ngay
-    document.getElementById("buy-now").onclick = () => {
-      const orderData = {
-        id: doc.id,
-        name: product.Name,
-        image: product.Image,
-        price: basePrice,
-        quantity: Number(quantityInput.value),
-        total: basePrice * Number(quantityInput.value),
       };
 
-      // Lưu thông tin đơn hàng và chuyển đến trang thanh toán
-      localStorage.setItem("quickOrder", JSON.stringify(orderData));
-      alert("Đang chuyển đến trang thanh toán...");
-      window.location.href = "assets/vendor/checkout.html";
-    };
-  });
+      document.getElementById("decrease").onclick = () => {
+        if (Number(quantityInput.value) > 1) {
+          quantityInput.value = Number(quantityInput.value) - 1;
+          updatePrice();
+        }
+      };
+
+      quantityInput.oninput = () => {
+        let val = Number(quantityInput.value);
+        if (val < 1) val = 1;
+        quantityInput.value = val;
+        updatePrice();
+      };
+
+      // Thêm vào giỏ hàng
+      document.getElementById("add-to-cart").onclick = () => {
+        const cart = JSON.parse(localStorage.getItem("cart") || "[]");
+        const productId = doc.id;
+        const quantityToAdd = Number(quantityInput.value);
+
+        // Kiểm tra sản phẩm đã có trong giỏ chưa
+        const existing = cart.find((item) => item.id === productId);
+        if (existing) {
+          existing.quantity += quantityToAdd;
+        } else {
+          cart.push({
+            id: productId,
+            name: product.Name,
+            image: product.thumbnail,
+            price: basePrice,
+            quantity: quantityToAdd,
+          });
+        }
+        localStorage.setItem("cart", JSON.stringify(cart));
+        updateCartCount();
+        alert("Đã thêm vào giỏ hàng!");
+      };
+      // Mua ngay
+      document.getElementById("buy-now").onclick = () => {
+        const orderData = {
+          id: doc.id,
+          name: product.Name,
+          image: product.Image,
+          price: basePrice,
+          quantity: Number(quantityInput.value),
+          total: basePrice * Number(quantityInput.value),
+        };
+
+        // Lưu thông tin đơn hàng và chuyển đến trang thanh toán
+        localStorage.setItem("quickOrder", JSON.stringify(orderData));
+        alert("Đang chuyển đến trang thanh toán...");
+        window.location.href = "assets/vendor/checkout.html";
+      };
+    });
+  } catch (error) {
+    console.error("Error fetching product details:", error);
+    document.getElementById("product-detail").innerHTML =
+      "<p>Có lỗi xảy ra khi tải thông tin sản phẩm.</p>";
+  }
 }
 
 // Tab functionality
@@ -274,8 +304,11 @@ function updateCartCount() {
     cartCount.textContent = totalItems;
   }
 }
-if (foodName) {
+if (urlData && urlData.foodName) {
   getProductDetail();
+} else {
+  document.getElementById("product-detail").innerHTML =
+    "<p>Không tìm thấy thông tin sản phẩm trong URL.</p>";
 }
 
 // Initialize components when page loads
@@ -300,7 +333,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // Đánh giá khách hàng (localStorage demo)
-const reviewsKey = "reviews_" + foodName;
+const reviewsKey = urlData ? `reviews_${urlData.foodName}` : "reviews_default";
 document.getElementById("review-form").onsubmit = function (e) {
   e.preventDefault();
   const name = document.getElementById("reviewer").value.trim();
@@ -361,9 +394,8 @@ function renderCartDropdown() {
     total += itemTotal;
     html += `
       <div class="cart-item">
-        <img src="${item.image || "assets/img/menu/menu-item-1.png"}" alt="${
-      item.name
-    }">
+        <img src="${item.image || "assets/img/menu/menu-item-1.png"}" alt="${item.name
+      }">
         <div class="cart-item-info">
           <div class="cart-item-name">${item.name}</div>
           <div class="cart-item-qty">Số lượng: ${item.quantity}</div>

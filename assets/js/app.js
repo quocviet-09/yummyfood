@@ -25,206 +25,153 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-async function displayProducts() {
-  const productCollection = query(collection(db, "food"), limit(6));
-  const querySnapshot = await getDocs(productCollection);
+// Configuration for different meal types
+const MEAL_CONFIGS = {
+  food: {
+    collection: "food",
+    elementId: "food-list",
+    urlParam: "food"
+  },
+  breakfast: {
+    collection: "breakfast",
+    elementId: "breakfast-list",
+    urlParam: "breakfast"
+  },
+  lunch: {
+    collection: "lunch",
+    elementId: "lunch-list",
+    urlParam: "lunch"
+  },
+  dinner: {
+    collection: "dinner",
+    elementId: "dinner-list",
+    urlParam: "dinner"
+  }
+};
 
-  const foodList = document.getElementById("food-list");
-  if (foodList) {
-    foodList.innerHTML = ""; // Xóa nội dung cũ
+/**
+ * Creates a menu item element for a product
+ * @param {Object} product - Product data from Firestore
+ * @param {string} urlParam - URL parameter for the detail page
+ * @returns {HTMLElement} - The created menu item element
+ */
+function createMenuItemElement(product, urlParam) {
+  // Create main container
+  const itemDiv = document.createElement("div");
+  itemDiv.className = "col-lg-4 menu-item";
 
+  // Create image element
+  const img = document.createElement("img");
+  img.src = product.thumbnail || "assets/img/menu/menu-item-1.png";
+  img.className = "menu-img img-fluid";
+  img.alt = product.Name || "Tên món";
+
+  // Create title link
+  const foodTitle = document.createElement("a");
+  foodTitle.textContent = product.Name || "Tên món";
+  foodTitle.href = `food-detail.html?${urlParam}=${product.url}`;
+  foodTitle.className = "menu-item-title";
+
+  // Create ingredients paragraph
+  const pIngredients = document.createElement("p");
+  pIngredients.className = "ingredients";
+  pIngredients.textContent = product.Information || "";
+
+  // Create price paragraph
+  const pPrice = document.createElement("p");
+  pPrice.className = "price";
+  pPrice.textContent = product.Price ? product.Price + "$" : "";
+
+  // Append all elements to container
+  itemDiv.appendChild(img);
+  itemDiv.appendChild(foodTitle);
+  itemDiv.appendChild(pIngredients);
+  itemDiv.appendChild(pPrice);
+
+  return itemDiv;
+}
+
+/**
+ * Generic function to display products from a collection
+ * @param {string} mealType - Type of meal (food, breakfast, lunch, dinner)
+ * @param {number} itemLimit - Maximum number of items to display
+ */
+async function displayProducts(mealType, itemLimit = 6) {
+  try {
+    const config = MEAL_CONFIGS[mealType];
+
+    if (!config) {
+      console.error(`Unknown meal type: ${mealType}`);
+      return;
+    }
+
+    // Query the collection
+    const productCollection = query(collection(db, config.collection), limit(itemLimit));
+    const querySnapshot = await getDocs(productCollection);
+
+    // Get the target element
+    const foodList = document.getElementById(config.elementId);
+    if (!foodList) {
+      console.warn(`Element with ID '${config.elementId}' not found`);
+      return;
+    }
+
+    // Clear existing content
+    foodList.innerHTML = "";
+
+    // Add loading state
+    foodList.innerHTML = '<div class="loading">Đang tải...</div>';
+
+    // Process each document
+    const menuItems = [];
     querySnapshot.forEach((doc) => {
       const product = doc.data();
+      console.log(`${mealType} product:`, product);
 
-      // Tạo div menu-item
-      const itemDiv = document.createElement("div");
-      itemDiv.className = "col-lg-4 menu-item";
-
-      // Tạo img
-      const img = document.createElement("img");
-      img.src = product.thumbnail || "assets/img/menu/menu-item-1.png";
-      img.className = "menu-img img-fluid";
-      img.alt = product.Name || "Tên món";
-
-      // Tạo h4
-      const foodTitle = document.createElement("a");
-      foodTitle.textContent = product.Name || "Tên món";
-      foodTitle.href = `food-detail.html?food=${product.url}`; // Thêm liên kết đến trang chi tiết món ăn
-
-      // Tạo p.ingredients
-      const pIngredients = document.createElement("p");
-      pIngredients.className = "ingredients";
-      pIngredients.textContent = product.Information || "";
-
-      // Tạo p.price
-      const pPrice = document.createElement("p");
-      pPrice.className = "price";
-      pPrice.textContent = product.Price ? product.Price + "$" : "";
-
-      // Thêm các phần tử vào itemDiv
-      itemDiv.appendChild(img);
-      itemDiv.appendChild(foodTitle);
-      itemDiv.appendChild(pIngredients);
-      itemDiv.appendChild(pPrice);
-
-      // Thêm itemDiv vào foodList
-      foodList.appendChild(itemDiv);
+      const menuItem = createMenuItemElement(product, config.urlParam);
+      menuItems.push(menuItem);
     });
+
+    // Clear loading and add items
+    foodList.innerHTML = "";
+    menuItems.forEach(item => foodList.appendChild(item));
+
+    // Show message if no items found
+    if (menuItems.length === 0) {
+      foodList.innerHTML = '<div class="no-items">Không có món ăn nào được tìm thấy.</div>';
+    }
+
+  } catch (error) {
+    console.error(`Error displaying ${mealType} products:`, error);
+    const foodList = document.getElementById(MEAL_CONFIGS[mealType]?.elementId);
+    if (foodList) {
+      foodList.innerHTML = '<div class="error">Có lỗi xảy ra khi tải dữ liệu.</div>';
+    }
   }
 }
 
-displayProducts();
+/**
+ * Initialize all meal type displays
+ */
+async function initializeAllMealTypes() {
+  const mealTypes = Object.keys(MEAL_CONFIGS);
 
-async function displayBreakfast() {
-  const productCollection = query(collection(db, "breakfast"), limit(6));
-  const querySnapshot = await getDocs(productCollection);
+  // Display all meal types in parallel for better performance
+  const displayPromises = mealTypes.map(mealType => displayProducts(mealType));
 
-  const foodList = document.getElementById("breakfast-list");
-  if (foodList) {
-    foodList.innerHTML = ""; // Xóa nội dung cũ
-
-    querySnapshot.forEach((doc) => {
-      const product = doc.data();
-
-      // Tạo div menu-item
-      const itemDiv = document.createElement("div");
-      itemDiv.className = "col-lg-4 menu-item";
-
-      // Tạo img
-      const img = document.createElement("img");
-      img.src = product.thumbnail || "assets/img/menu/menu-item-1.png";
-      img.className = "menu-img img-fluid";
-      img.alt = product.Name || "Tên món";
-
-      // Tạo h4
-      const foodTitle = document.createElement("a");
-      foodTitle.textContent = product.Name || "Tên món";
-      foodTitle.href = `food-detail.html?breakfast=${product.url}`; // Thêm liên kết đến trang chi tiết món ăn
-
-      // Tạo p.ingredients
-      const pIngredients = document.createElement("p");
-      pIngredients.className = "ingredients";
-      pIngredients.textContent = product.Information || "";
-
-      // Tạo p.price
-      const pPrice = document.createElement("p");
-      pPrice.className = "price";
-      pPrice.textContent = product.Price ? product.Price + "$" : "";
-
-      // Thêm các phần tử vào itemDiv
-      itemDiv.appendChild(img);
-      itemDiv.appendChild(foodTitle);
-      itemDiv.appendChild(pIngredients);
-      itemDiv.appendChild(pPrice);
-
-      // Thêm itemDiv vào foodList
-      foodList.appendChild(itemDiv);
-    });
+  try {
+    await Promise.all(displayPromises);
+    console.log('All meal types loaded successfully');
+  } catch (error) {
+    console.error('Error loading some meal types:', error);
   }
 }
 
-displayBreakfast();
+// Initialize when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+  initializeAllMealTypes();
+});
 
-async function displayLunch() {
-  const productCollection = query(collection(db, "lunch"), limit(6));
-  const querySnapshot = await getDocs(productCollection);
-
-  const foodList = document.getElementById("lunch-list");
-  if (foodList) {
-    foodList.innerHTML = ""; // Xóa nội dung cũ
-
-    querySnapshot.forEach((doc) => {
-      const product = doc.data();
-      // Kiểm tra log
-      console.log(product);
-
-      // Tạo div menu-item
-      const itemDiv = document.createElement("div");
-      itemDiv.className = "col-lg-4 menu-item";
-
-      // Tạo img
-      const img = document.createElement("img");
-      img.src = product.thumbnail || "assets/img/menu/menu-item-1.png";
-      img.className = "menu-img img-fluid";
-      img.alt = product.Name || "Tên món";
-
-      // Tạo h4
-      const foodTitle = document.createElement("a");
-      foodTitle.textContent = product.Name || "Tên món";
-      foodTitle.href = `food-detail.html?lunch=${product.url}`; // Thêm liên kết đến trang chi tiết món ăn
-
-      // Tạo p.ingredients
-      const pIngredients = document.createElement("p");
-      pIngredients.className = "ingredients";
-      pIngredients.textContent = product.Information || "";
-
-      // Tạo p.price
-      const pPrice = document.createElement("p");
-      pPrice.className = "price";
-      pPrice.textContent = product.Price ? product.Price + "$" : "";
-
-      // Thêm các phần tử vào itemDiv
-      itemDiv.appendChild(img);
-      itemDiv.appendChild(foodTitle);
-      itemDiv.appendChild(pIngredients);
-      itemDiv.appendChild(pPrice);
-
-      // Thêm itemDiv vào foodList
-      foodList.appendChild(itemDiv);
-    });
-  }
-}
-
-displayLunch();
-
-async function displayDinner() {
-  const productCollection = query(collection(db, "dinner"), limit(6));
-  const querySnapshot = await getDocs(productCollection);
-
-  const foodList = document.getElementById("dinner-list");
-  if (foodList) {
-    foodList.innerHTML = ""; // Xóa nội dung cũ
-
-    querySnapshot.forEach((doc) => {
-      const product = doc.data();
-      // Kiểm tra log
-      console.log(product);
-
-      // Tạo div menu-item
-      const itemDiv = document.createElement("div");
-      itemDiv.className = "col-lg-4 menu-item";
-
-      // Tạo img
-      const img = document.createElement("img");
-      img.src = product.thumbnail || "assets/img/menu/menu-item-1.png";
-      img.className = "menu-img img-fluid";
-      img.alt = product.Name || "Tên món";
-
-      // Tạo h4
-      const foodTitle = document.createElement("a");
-      foodTitle.textContent = product.Name || "Tên món";
-      foodTitle.href = `food-detail.html?lunch=${product.url}`; // Thêm liên kết đến trang chi tiết món ăn
-
-      // Tạo p.ingredients
-      const pIngredients = document.createElement("p");
-      pIngredients.className = "ingredients";
-      pIngredients.textContent = product.Information || "";
-
-      // Tạo p.price
-      const pPrice = document.createElement("p");
-      pPrice.className = "price";
-      pPrice.textContent = product.Price ? product.Price + "$" : "";
-
-      // Thêm các phần tử vào itemDiv
-      itemDiv.appendChild(img);
-      itemDiv.appendChild(foodTitle);
-      itemDiv.appendChild(pIngredients);
-      itemDiv.appendChild(pPrice);
-
-      // Thêm itemDiv vào foodList
-      foodList.appendChild(itemDiv);
-    });
-  }
-}
-
-displayDinner();
+// Export functions for external use if needed
+window.displayProducts = displayProducts;
+window.initializeAllMealTypes = initializeAllMealTypes;
