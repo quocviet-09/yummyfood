@@ -73,6 +73,53 @@ function updateCartCount() {
   }
 }
 
+// Function to remove individual item from cart
+function removeFromCart(index) {
+  const cart = JSON.parse(localStorage.getItem("cart") || "[]");
+
+  if (index >= 0 && index < cart.length) {
+    const removedItem = cart[index];
+    cart.splice(index, 1);
+    localStorage.setItem("cart", JSON.stringify(cart));
+
+    // Update cart count and re-render cart dropdown
+    updateCartCount();
+    renderCartDropdown();
+
+    // Show success message
+    showNotification(`Đã xóa "${removedItem.name}" khỏi giỏ hàng!`, 'success');
+  }
+}
+
+// Function to show notifications
+function showNotification(message, type = 'info') {
+  const notification = document.createElement('div');
+  notification.textContent = message;
+  notification.style.cssText = `
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: ${type === 'success' ? '#27ae60' : type === 'error' ? '#e74c3c' : '#3498db'};
+    color: white;
+    padding: 12px 20px;
+    border-radius: 8px;
+    z-index: 10000;
+    font-weight: 500;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    animation: slideInRight 0.3s ease;
+  `;
+  document.body.appendChild(notification);
+
+  setTimeout(() => {
+    notification.style.animation = 'slideOutRight 0.3s ease';
+    setTimeout(() => notification.remove(), 300);
+  }, 3000);
+}
+
+// Make functions globally accessible
+window.removeFromCart = removeFromCart;
+window.showNotification = showNotification;
+
 // Make functions globally accessible immediately
 window.goToProduct = goToProduct;
 window.quickAddToCart = quickAddToCart;
@@ -534,32 +581,55 @@ const navActions = document.querySelector(".nav-actions");
 function renderCartDropdown() {
   const cart = JSON.parse(localStorage.getItem("cart") || "[]");
   if (!cartDropdown) return;
+
   if (cart.length === 0) {
-    cartDropdown.innerHTML = `<div class="cart-empty">Giỏ hàng của bạn đang trống.</div>`;
+    cartDropdown.innerHTML = `
+      <div class="cart-empty">
+        <i class="fas fa-shopping-cart" style="font-size: 2rem; color: var(--gray-400); margin-bottom: 0.5rem;"></i>
+        <p>Giỏ hàng của bạn đang trống.</p>
+      </div>
+    `;
     return;
   }
+
   let html = `<h4>Giỏ hàng của bạn</h4>`;
   let total = 0;
-  cart.forEach((item) => {
+
+  cart.forEach((item, index) => {
     const itemTotal = item.price * item.quantity;
     total += itemTotal;
     html += `
       <div class="cart-item">
-        <img src="${item.image || "assets/img/menu/menu-item-1.png"}" alt="${item.name
-      }">
+        <img src="${item.image || "assets/img/menu/menu-item-1.png"}" alt="${item.name}">
         <div class="cart-item-info">
           <div class="cart-item-name">${item.name}</div>
           <div class="cart-item-qty">Số lượng: ${item.quantity}</div>
+          <div class="cart-item-unit-price">Đơn giá: ${item.price}$</div>
         </div>
-        <div class="cart-item-price">${itemTotal}$</div>
+        <div class="cart-item-actions">
+          <div class="cart-item-price">${itemTotal.toFixed(0)}$</div>
+          <button class="remove-item-btn" onclick="removeFromCart(${index})" title="Xóa sản phẩm">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
       </div>
     `;
   });
-  html += `<div class="cart-total">Tổng cộng: ${total}$</div>
+
+  html += `
+    <div class="cart-total">Tổng cộng: ${total.toFixed(0)}$</div>
     <div class="cart-actions">
-      <button onclick="window.location.href='assets/vendor/checkout.html'">Thanh toán</button>
-      <button onclick="clearCart()">Xóa giỏ</button>
-    </div>`;
+      <button class="checkout-btn" onclick="window.location.href='assets/vendor/checkout.html'">
+        <i class="fas fa-credit-card"></i>
+        Thanh toán
+      </button>
+      <button class="clear-cart-btn" onclick="clearCart()">
+        <i class="fas fa-trash"></i>
+        Xóa tất cả
+      </button>
+    </div>
+  `;
+
   cartDropdown.innerHTML = html;
 }
 

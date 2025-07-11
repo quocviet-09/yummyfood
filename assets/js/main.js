@@ -298,14 +298,20 @@ function renderCart() {
 
   cartItemsDiv.innerHTML = cart
     .map(
-      (item) => `
-    <div class="cart-item" style="display:flex;align-items:center;margin-bottom:10px;">
-      <img src="${item.image}" alt="${item.name}" style="width:48px;height:48px;object-fit:cover;border-radius:6px;margin-right:10px;">
+      (item, index) => `
+    <div class="cart-item" style="display:flex;align-items:center;margin-bottom:10px;padding:8px;border-radius:6px;background:#f9f9f9;">
+      <img src="${item.image || 'assets/img/menu/menu-item-1.png'}" alt="${item.name}" style="width:48px;height:48px;object-fit:cover;border-radius:6px;margin-right:10px;">
       <div style="flex:1;">
         <div style="font-weight:600;color:#222;">${item.name}</div>
         <div style="font-size:14px;color:#555;">Số lượng: ${item.quantity}</div>
+        <div style="font-size:12px;color:#888;">Đơn giá: ${item.price}$</div>
       </div>
-      <div style="font-weight:600;color:#ff724c;">${item.price}$</div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div style="font-weight:600;color:#ff724c;">${(item.price * item.quantity).toFixed(0)}$</div>
+        <button onclick="removeFromCart(${index})" style="background:#e74c3c;color:white;border:none;border-radius:4px;width:24px;height:24px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;" title="Xóa sản phẩm">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
     </div>
   `
     )
@@ -321,6 +327,43 @@ function renderCart() {
   const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
   totalAmountSpan.textContent = `${total}$`;
 }
+
+// Function to remove individual item from cart
+function removeFromCart(index) {
+  const cart = JSON.parse(localStorage.getItem("cart") || "[]");
+
+  if (index >= 0 && index < cart.length) {
+    // Remove item at specific index
+    cart.splice(index, 1);
+    localStorage.setItem("cart", JSON.stringify(cart));
+
+    // Trigger cart update event
+    window.dispatchEvent(new Event("cartUpdated"));
+
+    // Show feedback
+    const notification = document.createElement('div');
+    notification.textContent = 'Đã xóa sản phẩm khỏi giỏ hàng!';
+    notification.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #e74c3c;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 5px;
+      z-index: 10000;
+      animation: slideIn 0.3s ease;
+    `;
+    document.body.appendChild(notification);
+
+    setTimeout(() => {
+      notification.remove();
+    }, 2000);
+  }
+}
+
+// Make function globally accessible
+window.removeFromCart = removeFromCart;
 
 // Lắng nghe sự kiện cập nhật giỏ hàng
 window.addEventListener("cartUpdated", renderCart);
