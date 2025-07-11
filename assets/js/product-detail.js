@@ -4,6 +4,7 @@ import {
   collection,
   query,
   where,
+  limit,
   getDocs,
 } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
 
@@ -18,6 +19,64 @@ const firebaseConfig = {
 };
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+
+// Define global functions early to ensure they're available
+// Navigate to related product
+function goToProduct(productUrl, paramType) {
+  if (productUrl && paramType) {
+    window.location.href = `food-detail.html?${paramType}=${productUrl}`;
+  }
+}
+
+// Quick add to cart from related products
+function quickAddToCart(productId, productName, productImage, productPrice) {
+  const cart = JSON.parse(localStorage.getItem("cart") || "[]");
+
+  // Check if product already exists in cart
+  const existing = cart.find((item) => item.id === productId);
+  if (existing) {
+    existing.quantity += 1;
+  } else {
+    cart.push({
+      id: productId,
+      name: productName,
+      image: productImage,
+      price: productPrice,
+      quantity: 1,
+    });
+  }
+
+  localStorage.setItem("cart", JSON.stringify(cart));
+  updateCartCount();
+
+  // Show success message with animation
+  const btn = event.target.closest('.quick-add-btn');
+  if (btn) {
+    const originalHTML = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-check"></i>';
+    btn.style.background = 'var(--success-color)';
+
+    setTimeout(() => {
+      btn.innerHTML = originalHTML;
+      btn.style.background = '';
+    }, 1500);
+  }
+}
+
+// Update cart count
+function updateCartCount() {
+  const cart = JSON.parse(localStorage.getItem("cart") || "[]");
+  const cartCount = document.querySelector(".cart-count");
+  if (cartCount) {
+    const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+    cartCount.textContent = totalItems;
+  }
+}
+
+// Make functions globally accessible immediately
+window.goToProduct = goToProduct;
+window.quickAddToCart = quickAddToCart;
+window.updateCartCount = updateCartCount;
 
 // Parse URL parameters to get food identifier and collection
 function parseURLParams() {
@@ -128,7 +187,10 @@ async function getProductDetail() {
       // Cập nhật mô tả trong tab
       document.getElementById("product-description").textContent =
         product.Information ||
-        "Món ăn ngon tuyệt vời với hương vị độc đáo, được chế biến từ những nguyên liệu tươi ngon nhất."; // Xử lý tăng giảm số lượng và cập nhật giá
+        "Món ăn ngon tuyệt vời với hương vị độc đáo, được chế biến từ những nguyên liệu tươi ngon nhất.";
+
+      // Load related products from same category (excluding current product)
+      loadRelatedProducts(doc.id); // Xử lý tăng giảm số lượng và cập nhật giá
       const quantityInput = document.getElementById("quantity");
       const currentPriceSpan = document.getElementById("current-price");
       const basePrice = Number(product.Price || 0);
@@ -254,56 +316,148 @@ function renderReviews() {
     .join("");
 }
 
-// Load related products (mock data)
-function loadRelatedProducts() {
-  const relatedProducts = [
-    {
-      name: "Bánh mì thịt nướng",
-      price: "25",
-      image: "assets/img/menu/menu-item-2.png",
-    },
-    {
-      name: "Phở bò tái",
-      price: "45",
-      image: "assets/img/menu/menu-item-3.png",
-    },
-    {
-      name: "Cơm gà xối mỡ",
-      price: "35",
-      image: "assets/img/menu/menu-item-4.png",
-    },
-    {
-      name: "Bún chả Hà Nội",
-      price: "40",
-      image: "assets/img/menu/menu-item-5.png",
-    },
-  ];
-
+// Load related products from the same category
+async function loadRelatedProducts(currentProductId = null) {
   const relatedGrid = document.getElementById("related-products");
-  relatedGrid.innerHTML = relatedProducts
-    .map(
-      (product) => `
-      <div class="related-item">
-        <img src="${product.image}" alt="${product.name}" />
-        <div class="related-item-info">
-          <h4>${product.name}</h4>
-          <div class="price">${product.price}$</div>
-        </div>
-      </div>
-    `
-    )
-    .join("");
-}
 
-// Update cart count
-function updateCartCount() {
-  const cart = JSON.parse(localStorage.getItem("cart") || "[]");
-  const cartCount = document.querySelector(".cart-count");
-  if (cartCount) {
-    const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-    cartCount.textContent = totalItems;
+  if (!urlData) {
+    relatedGrid.innerHTML = '<div class="no-items">Không thể tải sản phẩm liên quan.</div>';
+    return;
+  }
+
+  try {
+    // Show loading state
+    relatedGrid.innerHTML = '<div class="loading">Đang tải sản phẩm liên quan...</div>';
+
+    // Get category display name for section title
+    const categoryDisplayNames = {
+      food: "Món ăn chính",
+      breakfast: "Món sáng",
+      lunch: "Món trưa",
+      dinner: "Món tối"
+    };
+
+    // Update section title to reflect current category
+    const sectionTitle = document.querySelector('.related-products h3');
+    if (sectionTitle) {
+      sectionTitle.textContent = `${categoryDisplayNames[urlData.collection] || 'Món ăn'} tương tự`;
+    }
+
+    // Query products from the same collection/category
+    const relatedQuery = query(
+      collection(db, urlData.collection),
+      limit(8) // Get more items to filter out current product
+    );
+
+    const querySnapshot = await getDocs(relatedQuery);
+    const relatedProducts = [];
+
+    querySnapshot.forEach((doc) => {
+      const product = doc.data();
+      // Exclude current product and only show products with required data
+      if (doc.id !== currentProductId && product.Name && product.Price) {
+        relatedProducts.push({
+          id: doc.id,
+          name: product.Name,
+          price: product.Price,
+          image: product.thumbnail || "assets/img/menu/menu-item-1.png",
+          url: product.url,
+          information: product.Information || ""
+        });
+      }
+    });
+
+    // Limit to 4 products for display
+    const displayProducts = relatedProducts.slice(0, 4);
+
+    if (displayProducts.length === 0) {
+      relatedGrid.innerHTML = `
+        <div class="no-items">
+          <i class="fas fa-utensils" style="font-size: 2rem; color: var(--gray-400); margin-bottom: 0.5rem;"></i>
+          <p>Không có sản phẩm tương tự trong danh mục này.</p>
+        </div>
+      `;
+      return;
+    }
+
+    // Render related products with enhanced styling
+    relatedGrid.innerHTML = displayProducts
+      .map(
+        (product) => `
+        <div class="related-item" data-url="${product.url}" data-param="${urlData.paramType}">
+          <div class="related-item-image">
+            <img src="${product.image}" alt="${product.name}" />
+            <div class="related-item-overlay">
+              <i class="fas fa-eye"></i>
+              <span>Xem chi tiết</span>
+            </div>
+          </div>
+          <div class="related-item-info">
+            <h4 title="${product.name}">${product.name}</h4>
+            <p class="related-item-description" title="${product.information}">
+              ${product.information.length > 50 ? product.information.substring(0, 50) + '...' : product.information}
+            </p>
+            <div class="related-item-footer">
+              <div class="price">${product.price}$</div>
+              <button class="quick-add-btn" data-id="${product.id}" data-name="${product.name}" data-image="${product.image}" data-price="${product.price}">
+                <i class="fas fa-plus"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      `
+      )
+      .join("");
+
+    // Add event listeners to related products
+    addRelatedProductsEventListeners();
+
+  } catch (error) {
+    console.error("Error loading related products:", error);
+    relatedGrid.innerHTML = `
+      <div class="error">
+        <i class="fas fa-exclamation-triangle"></i>
+        <p>Có lỗi xảy ra khi tải sản phẩm liên quan.</p>
+      </div>
+    `;
   }
 }
+
+// Add event listeners to related products (alternative to onclick)
+function addRelatedProductsEventListeners() {
+  // Add click event for product navigation
+  document.querySelectorAll('.related-item').forEach(item => {
+    item.addEventListener('click', function (e) {
+      // Don't navigate if clicking on the quick add button
+      if (e.target.closest('.quick-add-btn')) {
+        return;
+      }
+
+      const url = this.dataset.url;
+      const param = this.dataset.param;
+      if (url && param) {
+        window.location.href = `food-detail.html?${param}=${url}`;
+      }
+    });
+  });
+
+  // Add click event for quick add buttons
+  document.querySelectorAll('.quick-add-btn').forEach(btn => {
+    btn.addEventListener('click', function (e) {
+      e.stopPropagation();
+
+      const productId = this.dataset.id;
+      const productName = this.dataset.name;
+      const productImage = this.dataset.image;
+      const productPrice = parseFloat(this.dataset.price);
+
+      if (productId && productName && productPrice) {
+        quickAddToCart(productId, productName, productImage, productPrice);
+      }
+    });
+  });
+}
+
 if (urlData && urlData.foodName) {
   getProductDetail();
 } else {
@@ -314,7 +468,6 @@ if (urlData && urlData.foodName) {
 // Initialize components when page loads
 document.addEventListener("DOMContentLoaded", () => {
   initializeTabs();
-  loadRelatedProducts();
   updateCartCount();
 
   // Smooth scroll for navigation links
@@ -371,8 +524,6 @@ document.getElementById("review-form").onsubmit = function (e) {
 
 // Initialize reviews when page loads
 renderReviews();
-
-// ...existing code...
 
 // Cart Dropdown Logic
 const cartBtn = document.querySelector(".cart-btn");
@@ -433,5 +584,3 @@ window.clearCart = function () {
   renderCartDropdown();
   updateCartCount();
 };
-
-// ...existing code...
