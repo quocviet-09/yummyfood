@@ -105,156 +105,239 @@
             padding: 12px 8px;
           }
         }
-      </style>
-  </head>
-  <body>
-    <div class="orders-container">
-      <h2>Đơn hàng của tôi</h2>
-      <!-- ...existing code... -->
+        .order-products-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px;
+    margin-top: 10px;
+    align-items: flex-start;
+  }
+  .order-product-item {
+    display: flex;
+    align-items: center;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 1px 6px #0001;
+    padding: 8px 12px;
+    min-width: 220px;
+    margin-bottom: 8px;
+    border: 1px solid #f3f3f3;
+  }
+  .order-product-img {
+    width: 54px;
+    height: 54px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-right: 12px;
+    border: 1px solid #eee;
+    background: #fafafa;
+  }
+  .order-product-info {
+    flex: 1;
+  }
+  .order-actions {
+    margin-top: 12px;
+    display: flex;
+    gap: 10px;
+  }
+  .btn-cancel {
+    background: #e74c3c;
+    color: #fff;
+    border: none;
+    padding: 7px 18px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background 0.2s;
+  }
+  .btn-cancel:hover {
+    background: #c0392b;
+  }
+</style>
+<body>
+  <div class="orders-container">
+    <h2>Đơn hàng của tôi</h2>
+    <!-- ...existing code... -->
 <div id="ordersList">Đang tải...</div>
 <!-- Thêm modal chỉnh sửa -->
 <!-- ...existing code... -->
 <div id="editModal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:#0006;z-index:1000;align-items:center;justify-content:center;">
-    <div style="background:#fff;padding:32px 24px;border-radius:12px;min-width:320px;max-width:90vw;box-shadow:0 8px 32px #0002;position:relative;">
-      <h3>Sửa đơn hàng</h3>
-      <form id="editOrderForm">
-        <input type="hidden" id="editOrderId" />
-        <div style="margin-bottom:12px;">
-          <label>Địa chỉ giao hàng</label>
-          <input type="text" id="editAddress" style="width:100%;padding:8px;margin-top:4px;" required />
-        </div>
-        <div style="margin-bottom:12px;">
-          <label>Phương thức thanh toán</label>
-          <select id="editPayment" style="width:100%;padding:8px;margin-top:4px;">
-            <option value="Tiền mặt">Tiền mặt</option>
-            <option value="Chuyển khoản">Chuyển khoản</option>
-            <option value="Momo">Momo</option>
-            <option value="ZaloPay">ZaloPay</option>
-          </select>
-        </div>
-        <div style="margin-bottom:12px;">
-          <label>Ghi chú</label>
-          <textarea id="editNote" style="width:100%;padding:8px;margin-top:4px;"></textarea>
-        </div>
-        <div style="text-align:right;">
-          <button type="button" onclick="closeEditModal()" style="margin-right:8px;">Hủy</button>
-          <button type="submit" style="background:#ff724c;color:#fff;padding:8px 18px;border:none;border-radius:6px;">Lưu</button>
-        </div>
-      </form>
-      <span onclick="closeEditModal()" style="position:absolute;top:8px;right:16px;cursor:pointer;font-size:20px;">&times;</span>
-    </div>
+  <div style="background:#fff;padding:32px 24px;border-radius:12px;min-width:320px;max-width:90vw;box-shadow:0 8px 32px #0002;position:relative;">
+    <h3>Sửa đơn hàng</h3>
+    <form id="editOrderForm">
+      <input type="hidden" id="editOrderId" />
+      <div style="margin-bottom:12px;">
+        <label>Người nhận</label>
+        <input type="text" id="editName" style="width:100%;padding:8px;margin-top:4px;" required />
+      </div>
+      <div style="margin-bottom:12px;">
+        <label>Số điện thoại</label>
+        <input type="text" id="editPhone" style="width:100%;padding:8px;margin-top:4px;" required />
+      </div>
+      <div style="margin-bottom:12px;">
+        <label>Email</label>
+        <input type="email" id="editEmail" style="width:100%;padding:8px;margin-top:4px;" required />
+      </div>
+      <div style="margin-bottom:12px;">
+        <label>Địa chỉ giao hàng</label>
+        <input type="text" id="editAddress" style="width:100%;padding:8px;margin-top:4px;" required />
+      </div>
+      <div style="margin-bottom:12px;">
+        <label>Phương thức thanh toán</label>
+        <select id="editPayment" style="width:100%;padding:8px;margin-top:4px;">
+          <option value="Tiền mặt">Tiền mặt</option>
+          <option value="Chuyển khoản">Chuyển khoản</option>
+          <option value="Momo">Momo</option>
+          <option value="ZaloPay">ZaloPay</option>
+        </select>
+      </div>
+      <div style="margin-bottom:12px;">
+        <label>Ghi chú</label>
+        <textarea id="editNote" style="width:100%;padding:8px;margin-top:4px;"></textarea>
+      </div>
+      <div style="text-align:right;">
+        <button type="button" onclick="closeEditModal()" style="margin-right:8px;">Hủy</button>
+        <button type="submit" style="background:#ff724c;color:#fff;padding:8px 18px;border:none;border-radius:6px;">Lưu</button>
+      </div>
+    </form>
+    <span onclick="closeEditModal()" style="position:absolute;top:8px;right:16px;cursor:pointer;font-size:20px;">&times;</span>
   </div>
-  <!-- ...existing code... -->
-  <script type="module">
-    import { auth, db } from "../js/auth.js";
-    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-auth.js";
-    import {
-      collection,
-      query,
-      where,
-      getDocs,
-      orderBy,
-      doc,
-      updateDoc,
-    } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
-  
-    // Hiển thị modal sửa
-    window.openEditModal = (orderId, address, note, payment) => {
-      document.getElementById("editOrderId").value = orderId;
-      document.getElementById("editAddress").value = address || "";
-      document.getElementById("editNote").value = note || "";
-      document.getElementById("editPayment").value = payment || "Tiền mặt";
-      document.getElementById("editModal").style.display = "flex";
-    };
-    window.closeEditModal = () => {
-      document.getElementById("editModal").style.display = "none";
-    };
-  
-    // Xử lý lưu chỉnh sửa
-    document.getElementById("editOrderForm").onsubmit = async (e) => {
-      e.preventDefault();
-      const orderId = document.getElementById("editOrderId").value;
-      const address = document.getElementById("editAddress").value;
-      const note = document.getElementById("editNote").value;
-      const payment = document.getElementById("editPayment").value;
-      try {
-        await updateDoc(doc(db, "orders", orderId), {
-          "shipping.address": address,
-          "shipping.note": note,
-          "shipping.payment": payment,
-        });
-        alert("Cập nhật thành công!");
-        window.closeEditModal();
-        window.location.reload();
-      } catch (err) {
-        alert("Lỗi: " + err.message);
-      }
-    };
-  
-    onAuthStateChanged(auth, async (user) => {
-      const ordersList = document.getElementById("ordersList");
-      if (!user) {
-        alert("Vui lòng đăng nhập để xem đơn hàng của bạn!");
-        window.location.href = "join.html";
-        return;
-      }
-      try {
-        const q = query(
-          collection(db, "orders"),
-          where("userId", "==", user.uid),
-          orderBy("createdAt", "desc")
-        );
-        const querySnapshot = await getDocs(q);
-        if (querySnapshot.empty) {
-          ordersList.innerHTML = "<p>Bạn chưa có đơn hàng nào.</p>";
-          return;
-        }
-        ordersList.innerHTML = "";
-        querySnapshot.forEach((docSnap) => {
-          const order = docSnap.data();
-          ordersList.innerHTML += `
-          <div class="order-item">
-            <div class="order-header">
-              <span>Mã đơn: <b>${docSnap.id}</b></span>
-              <span class="order-status">${order.status || "pending"}</span>
-            </div>
-            <div class="order-date">Ngày đặt: ${new Date(order.createdAt).toLocaleString()}</div>
-            <div class="order-shipping">
-              <b>Người nhận:</b> ${order.shipping?.name || ""} <br>
-              <b>SĐT:</b> ${order.shipping?.phone || ""} <br>
-              <b>Email:</b> ${order.shipping?.email || ""} <br>
-              <b>Địa chỉ:</b> ${order.shipping?.address || ""} <br>
-              <b>Phương thức thanh toán:</b> ${order.shipping?.payment || "Chưa chọn"} <br>
-              <b>Ghi chú:</b> ${order.shipping?.note || ""}
-              <br>
-              <button onclick="openEditModal(
-                '${docSnap.id}',
-                '${order.shipping?.address?.replace(/'/g,"\\'") || ""}',
-                '${order.shipping?.note?.replace(/'/g,"\\'") || ""}',
-                '${order.shipping?.payment?.replace(/'/g,"\\'") || "Tiền mặt"}'
-              )" style="margin-top:8px;background:#ff724c;color:#fff;padding:6px 16px;border:none;border-radius:6px;cursor:pointer;">Sửa thông tin</button>
-            </div>
-            <div class="order-products" style="margin-top:10px;">
-              <b>Sản phẩm:</b><br>
-              ${order.items
-                .map(
-                  (item) => `
-                <span>${item.name} x ${item.quantity} (${item.price}$)</span>
-              `
-                )
-                .join("<br>")}
-            </div>
-            <div class="order-total" style="margin-top:10px;">
-              Tổng cộng: <span style="color:#ff724c">${order.total}$</span>
-            </div>
-          </div>
-        `;
-        });
-      } catch (error) {
-        console.error("Lỗi khi lấy đơn hàng:", error);
-        ordersList.innerHTML = "<p>Không thể tải đơn hàng. Vui lòng thử lại sau.</p>";
-      }
+</div>
+<script type="module">
+  import { auth, db } from "../js/auth.js";
+  import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-auth.js";
+  import {
+    collection,
+    query,
+    where,
+    getDocs,
+    orderBy,
+    doc,
+    updateDoc,
+    deleteDoc,
+  } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
+
+  window.openEditModal = (orderId, address, note, payment, name, phone, email) => {
+  document.getElementById("editOrderId").value = orderId;
+  document.getElementById("editAddress").value = address || "";
+  document.getElementById("editNote").value = note || "";
+  document.getElementById("editPayment").value = payment || "Tiền mặt";
+  document.getElementById("editName").value = name || "";
+  document.getElementById("editPhone").value = phone || "";
+  document.getElementById("editEmail").value = email || "";
+  document.getElementById("editModal").style.display = "flex";
+};
+window.closeEditModal = () => {
+  document.getElementById("editModal").style.display = "none";
+};
+
+// Xử lý lưu chỉnh sửa
+document.getElementById("editOrderForm").onsubmit = async (e) => {
+  e.preventDefault();
+  const orderId = document.getElementById("editOrderId").value;
+  const address = document.getElementById("editAddress").value;
+  const note = document.getElementById("editNote").value;
+  const payment = document.getElementById("editPayment").value;
+  const name = document.getElementById("editName").value;
+  const phone = document.getElementById("editPhone").value;
+  const email = document.getElementById("editEmail").value;
+  try {
+    await updateDoc(doc(db, "orders", orderId), {
+      "shipping.address": address,
+      "shipping.note": note,
+      "shipping.payment": payment,
+      "shipping.name": name,
+      "shipping.phone": phone,
+      "shipping.email": email,
     });
-  </script>
+    alert("Cập nhật thành công!");
+    window.closeEditModal();
+    window.location.reload();
+  } catch (err) {
+    alert("Lỗi: " + err.message);
+  }
+};
+
+// ...onAuthStateChanged như cũ...
+onAuthStateChanged(auth, async (user) => {
+  const ordersList = document.getElementById("ordersList");
+  if (!user) {
+    alert("Vui lòng đăng nhập để xem đơn hàng của bạn!");
+    window.location.href = "join.html";
+    return;
+  }
+  try {
+    const q = query(
+      collection(db, "orders"),
+      where("userId", "==", user.uid),
+      orderBy("createdAt", "desc")
+    );
+    const querySnapshot = await getDocs(q);
+    if (querySnapshot.empty) {
+      ordersList.innerHTML = "<p>Bạn chưa có đơn hàng nào.</p>";
+      return;
+    }
+    ordersList.innerHTML = "";
+    querySnapshot.forEach((docSnap) => {
+      const order = docSnap.data();
+      ordersList.innerHTML += `
+        <div class="order-item">
+          <div class="order-header">
+            <span>Mã đơn: <b>${docSnap.id}</b></span>
+            <span class="order-status">${order.status || "pending"}</span>
+          </div>
+          <div class="order-date">Ngày đặt: ${new Date(order.createdAt).toLocaleString()}</div>
+          <div class="order-shipping">
+            <b>Người nhận:</b> ${order.shipping?.name || ""} <br>
+            <b>SĐT:</b> ${order.shipping?.phone || ""} <br>
+            <b>Email:</b> ${order.shipping?.email || ""} <br>
+            <b>Địa chỉ:</b> ${order.shipping?.address || ""} <br>
+            <b>Phương thức thanh toán:</b> ${order.shipping?.payment || "Chưa chọn"} <br>
+            <b>Ghi chú:</b> ${order.shipping?.note || ""}
+          </div>
+          <div class="order-products-list">
+            ${order.items
+              .map(
+                (item) => `
+                <div class="order-product-item">
+                  <img class="order-product-img" src="${item.image || 'https://via.placeholder.com/54x54?text=No+Image'}" alt="${item.name}" />
+                  <div class="order-product-info">
+                    <div><b>${item.name}</b></div>
+                    <div>Số lượng: ${item.quantity}</div>
+                    <div>Giá: ${item.price}$</div>
+                  </div>
+                </div>
+              `
+              )
+              .join("")}
+          </div>
+          <div class="order-total" style="margin-top:10px;">
+            Tổng cộng: <span style="color:#ff724c">${order.total}$</span>
+          </div>
+          <div class="order-actions">
+            <button onclick="openEditModal(
+              '${docSnap.id}',
+              '${order.shipping?.address?.replace(/'/g,"\\'") || ""}',
+              '${order.shipping?.note?.replace(/'/g,"\\'") || ""}',
+              '${order.shipping?.payment?.replace(/'/g,"\\'") || "Tiền mặt"}',
+              '${order.shipping?.name?.replace(/'/g,"\\'") || ""}',
+              '${order.shipping?.phone?.replace(/'/g,"\\'") || ""}',
+              '${order.shipping?.email?.replace(/'/g,"\\'") || ""}'
+            )" style="background:#ff724c;color:#fff;padding:7px 18px;border:none;border-radius:6px;cursor:pointer;">
+              <i class="fa-solid fa-pen-to-square"></i> Sửa thông tin
+            </button>
+            <button class="btn-cancel" onclick="cancelOrder('${docSnap.id}')">
+              <i class="fa-solid fa-ban"></i> Hủy đơn
+            </button>
+          </div>
+        </div>
+      `;
+    });
+  } catch (error) {
+    console.error("Lỗi khi lấy đơn hàng:", error);
+    ordersList.innerHTML = "<p>Không thể tải đơn hàng. Vui lòng thử lại sau.</p>";
+  }
+});
+</script>
   </body>
 </html>
